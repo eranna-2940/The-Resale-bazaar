@@ -8,12 +8,49 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const SellerProfile = () => {
   const { sellerId } = useParams();
   const [sellerDetails, setSellerDetails] = useState({});
-  const [sellerProducts, setSellerProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [sellingProducts, setSellingProducts] = useState([]);
+  const [soldProducts, setSoldProducts] = useState([]);
+  const [likedProducts, setLikedProducts] = useState([]);
+  const [savedProducts, setSavedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('all');
+  const [formData, setFormData] = useState({
+    user_id: sellerId,
+    name: '',
+    email: '',
+    phone: '',
+    comment: ''
+  });
+
+  const { name, email, phone, comment } = formData;
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = () => {
+    if (!name || !email || !phone) {
+      alert("Please fill out all required fields");
+      return;
+    }
+
+    axios.post(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/contactseller`, {
+      name,
+      email,
+      phone,
+      comment,
+      user_id: sellerId
+    })
+    .then(res => {
+      alert('Data added successfully')
+      setFormData({ name: '', email: '', phone: '', comment: '' });
+    }).catch(err => {
+      console.error('Error posting data:', err);
+    });
+  };
 
   useEffect(() => {
-    // Fetch seller details including profile picture URL
     axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/user`)
       .then(res => {
         if (res.data !== "Fail" && res.data !== "Error") {
@@ -30,34 +67,65 @@ const SellerProfile = () => {
       })
       .catch(err => console.log(err));
 
-    // Fetch products based on sellerId
-    axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/allproducts/`)
+      axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/allproducts`)
       .then(res => {
         if (res.data !== "Fail" && res.data !== "Error") {
-          const filteredProducts = res.data.filter(product => product.seller_id.toString() === sellerId);
-          setSellerProducts(filteredProducts);
+          const products = res.data.filter(product => product.seller_id.toString() === sellerId);
+          setAllProducts(products);
+          const selling = products.filter(product => product.quantity > 0)
+          setSellingProducts(selling);
+          const sold = products.filter(product => product.quantity === 0)
+          setSoldProducts(sold);
+          setSavedProducts(products.filter(product => product.saved));
         }
         setLoading(false);
       })
       .catch(err => {
         console.log(err);
         setLoading(false);
+
+      });
+  }, [sellerId]);
+  useEffect(() => {
+    axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/getproducts`)
+      .then(res => {
+        if (res.data !== "Fail" && res.data !== "Error") {
+          const products = res.data.filter(product => product.user_id.toString() === sellerId);
+          setLikedProducts(products);
+        }
+      })
+      .catch(err => {
+        console.log(err);
       });
   }, [sellerId]);
 
-  const renderStarRatings = (rating) => {
-    const stars = [];
-    const filledStars = Math.floor(rating);
-    for (let i = 0; i < 5; i++) {
-      stars.push(
-        <i key={i} className={`bi ${i < filledStars ? 'bi-star-fill text-warning' : 'bi-star'} me-1`}></i>
-      );
-    }
-    return stars;
+  const renderProducts = (products) => {
+    return (
+      <div className="d-flex flex-wrap justify-content-center ms-md-5 me-md-5 mb-4 mt-md-3 mt-3 ms-2 me-2">
+        {products.map(product => (
+          <div className="card productcard" key={product.id}>
+            <Link to={"/product/" + product.id} state={{ productdetails: product }}>
+              <div className="text-center productimgback">
+                <img
+                  src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(product.image)[0]}`}
+                  className="card-img-top"
+                  alt="product"
+                />
+              </div>
+            </Link>
+            <div className="card-body">
+              <p className="card-text text-success">
+                <b>&#36; {product.price}.00</b>
+              </p>
+              {product.size !== "NA" && (
+                <h6 className="card-text" style={{ lineHeight: "8px" }}>{product.size}</h6>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
-
-  const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
 
   return (
     <>
@@ -70,8 +138,7 @@ const SellerProfile = () => {
                 <h2 className="seller-name fs-1">
                   <i className="bi bi-person-circle fs-1"></i>&nbsp;{sellerDetails.name}
                 </h2>
-                {/* <p className='ms-5'>{renderStarRatings(4)}</p> */}
-                <button className="btn btn-primary ms-5" onClick={handleShowModal}>
+                <button className="btn btn-primary ms-5" data-bs-toggle="modal" data-bs-target="#exampleModal">
                   Contact Seller
                 </button>
               </div>
@@ -80,69 +147,72 @@ const SellerProfile = () => {
         </div>
       </div>
       <div className="container mt-5">
-        <div className="row">
-          <div className="">
-            <h3 className="mb-4">Products by {sellerDetails.name}</h3>
-            {loading ? (
-              <p>Loading...</p>
-            ) : sellerProducts.length === 0 ? (
-              <p>No products available.</p>
-            ) : (
-              <div className="d-md-flex flex-wrap ms-md-5 me-md-5 mb-4 mt-md-3 mt-3 ms-2 me-2">
-                {sellerProducts.map(product => (
-                  <div className="card productcard" key={product.id}>
-                    <Link to={"/product/" + product.id} state={{ productdetails: product }}>
-                      <div className="text-center productimgback">
-                        <img
-                          src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(product.image)[0]}`}
-                          className="card-img-top"
-                          alt="product"
-                        />
-                      </div>
-                    </Link>
-                    <div className="card-body">
-                      <p className="card-text text-success">
-                        <b>&#36; {product.price}.00</b>
-                      </p>
-                      {product.size !== "NA" &&
-                        <h6 className="card-text" style={{ lineHeight: "8px" }}>{product.size}</h6>
-                      }
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        <ul className="nav nav-tabs" id="myTab" role="tablist">
+          <li className="nav-item" role="presentation">
+            <button className={`nav-link ${activeTab === 'all' ? 'active' : ''}`} id="all-tab" data-bs-toggle="tab" role="tab" onClick={() => setActiveTab('all')}>All</button>
+          </li>
+          <li className="nav-item" role="presentation">
+            <button className={`nav-link ${activeTab === 'selling' ? 'active' : ''}`} id="selling-tab" data-bs-toggle="tab" role="tab" onClick={() => setActiveTab('selling')}>Selling</button>
+          </li>
+          <li className="nav-item" role="presentation">
+            <button className={`nav-link ${activeTab === 'sold' ? 'active' : ''}`} id="sold-tab" data-bs-toggle="tab" role="tab" onClick={() => setActiveTab('sold')}>Sold</button>
+          </li>
+          <li className="nav-item" role="presentation">
+            <button className={`nav-link ${activeTab === 'likes' ? 'active' : ''}`} id="likes-tab" data-bs-toggle="tab" role="tab" onClick={() => setActiveTab('likes')}>Likes</button>
+          </li>
+          <li className="nav-item" role="presentation">
+            <button className={`nav-link ${activeTab === 'saved' ? 'active' : ''}`} id="saved-tab" data-bs-toggle="tab" role="tab" onClick={() => setActiveTab('saved')}>Saved</button>
+          </li>
+        </ul>
+        <div className="tab-content" id="myTabContent">
+          <div className={`tab-pane fade ${activeTab === 'all' ? 'show active' : ''}`} id="all" role="tabpanel">
+            {loading ? <p>Loading...</p> : renderProducts(allProducts)}
+          </div>
+          <div className={`tab-pane fade ${activeTab === 'selling' ? 'show active' : ''}`} id="selling" role="tabpanel">
+            {loading ? <p>Loading...</p> : renderProducts(sellingProducts)}
+          </div>
+          <div className={`tab-pane fade ${activeTab === 'sold' ? 'show active' : ''}`} id="sold" role="tabpanel">
+            {loading ? <p>Loading...</p> : renderProducts(soldProducts)}
+          </div>
+          <div className={`tab-pane fade ${activeTab === 'likes' ? 'show active' : ''}`} id="likes" role="tabpanel">
+            {loading ? <p>Loading...</p> : renderProducts(likedProducts)}
+          </div>
+          <div className={`tab-pane fade ${activeTab === 'saved' ? 'show active' : ''}`} id="saved" role="tabpanel">
+            {loading ? <p>Loading...</p> : renderProducts(savedProducts)}
           </div>
         </div>
       </div>
 
-      {/* Contact Seller Modal */}
-      <div className={`modal fade ${showModal ? 'show' : ''}`} style={{ display: showModal ? 'block' : 'none' }} tabIndex="-1">
+      <div className="modal fade" id="exampleModal"  aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Contact Seller</h5>
-              <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+              <h5 className="modal-title" id="exampleModalLabel">Modal title</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
               <form>
                 <div className="mb-3">
                   <label htmlFor="name" className="form-label">Name</label>
-                  <input type="text" className="form-control" id="name" />
+                  <input type="text" className="form-control" id="name" value={name} onChange={handleInputChange} />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">Email</label>
-                  <input type="email" className="form-control" id="email" />
+                  <input type="email" className="form-control" id="email" value={email} onChange={handleInputChange} />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="phone" className="form-label">Phone</label>
-                  <input type="text" className="form-control" id="phone" />
+                  <input type="text" className="form-control" id="phone" value={phone} onChange={handleInputChange} />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="comment" className="form-label">Comment</label>
+                  <textarea type="text" className="form-control" id="comment" value={comment} onChange={handleInputChange} />
                 </div>
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Close</button>
-              <button type="button" className="btn btn-primary">Send</button>
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" className="btn btn-primary" onClick={handleSubmit}>Save</button>
             </div>
           </div>
         </div>

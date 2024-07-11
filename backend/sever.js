@@ -1466,8 +1466,49 @@ app.get('/reviews', (req, res) => {
   });
 });
 
+app.get('/shipmentjoin', (req, res) => {
+  const query = `SELECT * FROM products INNER JOIN  orders ON orders.product_id = products.id;`
 
+  db.query(query, (err, data) => {
+    if (err) {
+      return res.json("Error");
+    }
+    if (data.length > 0) {
+      return res.json(data);
+    } else {
+      return res.json("Fail");
+    }
+  });
+});
 
+// app.post("/updateOrder", (req, res) => {
+//   const { shipment_id, shipped_date, delivered_date } = req.body;
+
+//   let sql;
+//   let values = [];
+
+//   if (shipped_date && delivered_date) {
+//     sql = updateOrderDeliveredandShippementQuery;
+//     values = [shipped_date, delivered_date, shipment_id];
+//   } else if (shipped_date) {
+//     sql = updateOrderShippmentQuery;
+//     values = [shipped_date, shipment_id];
+//   } else if (delivered_date) {
+//     sql = updateOrderDeliveredQuery;
+//     values = [delivered_date, shipment_id];
+//   } else {
+//     return res.status(400).json({ error: "No date provided for update" });
+//   }
+
+//   // Execute the SQL query
+//   db.query(sql, values, (err, result) => {
+//     if (err) {
+//       console.error("Error updating order:", err);
+//       return res.status(500).json({ error: "Error updating order" });
+//     }
+//     return res.json({ success: true, message: "Order updated successfully", result });
+//   });
+// });
 
 
 // payment
