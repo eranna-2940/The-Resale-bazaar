@@ -1032,6 +1032,21 @@ app.get("/wishlist", (req, res) => {
   });
 });
 
+app.get("/sellerproductsoffers", (req, res) => {
+  const sql = `SELECT * FROM products INNER JOIN  offered_products ON offered_products.product_id = products.id`;
+
+
+  db.query(sql, (err, data) => {
+    if (err) {
+      return res.json("Error");
+    }
+    if (data.length > 0) {
+      return res.json(data);
+    } else {
+      return res.json("Fail");
+    }
+  });
+});
 app.post("/addwishlist", (req, res) => {
   // const productData = req.body;
   const sql = addToWishlistQuery;
