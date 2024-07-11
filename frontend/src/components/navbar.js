@@ -7,13 +7,15 @@ import Wishlistemptyimg from '../images/wishlistemptyimg.png'
 import RBLogo from '../images/RB-logo5.png'
 import SearchBar from "./Searchbar";
 import SideOffcanvas from "./SideOffcanvas";
-
+// import { useAuth } from "../AuthContext";
+import { googleLogout } from "@react-oauth/google";
 
 const MyNavbar = () => {
   const [products, setProducts] = useState([]);
   const { user } = useData();
   const [isRotated, setIsRotated] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  // const { setIsAuthenticated } = useAuth();
   
   const navigate = useNavigate();
 
@@ -49,6 +51,8 @@ const MyNavbar = () => {
   const handlelogout = () => {
     sessionStorage.removeItem("user-token");
     sessionStorage.removeItem("token");
+    googleLogout();
+    // setIsAuthenticated(false);
     axios
       .delete(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/logout`, {
         headers: {
@@ -303,6 +307,7 @@ const handleKeyPress = (event) => {
                       </Link>
                     </li>
                     {user.email !== "admin@admin" ? (
+                      <>
                     <li className="p-1">
                       <Link
                         to="/offers"
@@ -311,6 +316,15 @@ const handleKeyPress = (event) => {
                         <i className="bi bi-cash-stack"></i> Your Offers
                       </Link>
                     </li>
+                     <li className="p-1">
+                     <Link
+                       to="/contactseller"
+                       className="text-decoration-none text-dark ps-3"
+                     >
+                       <i class="bi bi-person-rolodex"></i> Contact Sellers
+                     </Link>
+                   </li> 
+                   </>
                   ) : null}
 
                     <li className="p-1">
@@ -437,7 +451,7 @@ const handleKeyPress = (event) => {
                       </td>
                       <td>
                         <img
-                          src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(product.image)[0]}`}
+                          src={`${JSON.parse(product.image)[0]}`}
                           alt={product.name}
                           style={{ maxWidth: "50px", maxHeight: "80px" }}
                         />

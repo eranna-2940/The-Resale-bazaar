@@ -1,10 +1,10 @@
 import "./App.css";
 import React, { useEffect, useState } from "react";
-import Home from "./components/home";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import Home from "./components/home";
 import Womenallproducts from "./components/women/Womenallproducts";
 import Highendcouture from "./components/women/Highendcouture";
 import Sarees from "./components/women/Sarees";
@@ -18,7 +18,7 @@ import Boy from "./components/kids/Boy";
 
 import Jewelryallcollection from "./components/jewelry/Jewelryallcollection";
 
-// import Booksallcollection from "./components/books/Booksallcollection";
+
 
 import Login from "./components/login";
 import Register from "./components/register";
@@ -45,22 +45,19 @@ import Checkout from "./components/Checkoutpage";
 import Finalcheckoutpage from "./components/finalcheckoutpage";
 import Cartitems from "./components/Cartitems";
 import Forgotpassword from "./components/Forgotpassword";
-// import Fiction from "./components/books/Fiction";
 import NecklacesChains from "./components/jewelry/NecklacesChains";
 import BraceletsBangles from "./components/jewelry/BraceletsBangles";
 import Earrings from "./components/jewelry/Earrings";
 import Rings from "./components/jewelry/Rings";
-// import Drama from "./components/books/Drama";
-// import Fantasy from "./components/books/Fantasy";
-// import Horror from "./components/books/Horror";
 import Offers from "./components/sellerdashboard/Offers";
 import Search from "./components/Search";
 import OrderPage from "./components/customerdetails/OrderPage";
-import SellerProfilePage from "./components/sellerdashboard/SellerProfilePage";
 import SellerProfile from "./components/sellerdashboard/SellerProfilePage";
 
 // import axios from "axios";
 import Scrolltotop from "./components/Scrolltotop";
+import ContactSeller from "./components/sellerdashboard/ContactSeller";
+import ReviewRatings from "./components/customerdetails/reviewsRatings";
 
 
 function App() {
@@ -78,16 +75,7 @@ function App() {
     checkUserToken();
   }, [isUserLoggedIn]);
 
-  // useEffect(()=>{
-  //   axios
-  //   .post(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/`)
-  //   .then(res=>{
-  //     // console.log(res)
-  //     sessionStorage.setItem("accessToken", res.data.accessToken);
-  //   }).catch((error) => {
-  //     console.log("Error fetching data:", error);
-  //   });
-  // },[]);
+
 
   return (
     <>
@@ -181,13 +169,7 @@ function App() {
           <Route path="earrings" element={<Earrings />}></Route>
           <Route path="rings" element={<Rings />}></Route>
 
-          {/* Books components routes */}
-          {/* <Route path="books" element={<Booksallcollection />}></Route>
-          <Route path="fiction" element={<Fiction />}></Route>
-          <Route path="drama" element={<Drama />}></Route>
-          <Route path="fantasy" element={<Fantasy />}></Route>
-          <Route path="horror" element={<Horror/>}></Route> */}
-
+        
           {/* Seller account routes */}
           <Route
             path="addnewproduct"
@@ -233,6 +215,9 @@ function App() {
           <Route path="/search" element={<Search/>} />
           <Route path="/orderpage" element={<OrderPage/>} />
           <Route path="/sellerprofile/:sellerId" element={<SellerProfile/>} />
+          <Route path="/contactseller" element={<ContactSeller/>}/>
+          <Route path="/feedback" element={<ReviewRatings/>}/>
+
 
         </Routes>
       </BrowserRouter>
