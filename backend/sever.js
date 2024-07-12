@@ -68,7 +68,9 @@ const {
   updateOrderDeliveredandShippementQuery,
   ReviewsQuery,
   LikesQuery,
-  SavesQuery
+  SavesQuery,
+  fetchFindImagesQuery,
+  productsUpdateQuery
 } = require("./queries");
 const cors = require("cors");
 const multer = require('multer');
@@ -603,7 +605,7 @@ app.get("/women", (req, res) => {
 });
 
 app.get("/getproducts", (req, res) => {
-  const sql = 'SELECT  * FROM products p INNER JOIN `likes` l ON  p.id = l.product_id = 1'
+  const sql = 'SELECT  * FROM products p INNER JOIN `likes` l ON  p.id = l.product_id'
   const accepted = "true";
 
   db.query(sql, [accepted], (err, data) => {
@@ -617,7 +619,21 @@ app.get("/getproducts", (req, res) => {
     }
   });
 });
+app.get("/getsaveproducts", (req, res) => {
+  const sql = 'SELECT  * FROM products p INNER JOIN `saves` s ON  p.id = s.product_id'
+  const accepted = "true";
 
+  db.query(sql, [accepted], (err, data) => {
+    if (err) {
+      return res.json("Error");
+    }
+    if (data.length > 0) {
+      return res.json(data);
+    } else {
+      return res.json("Fail");
+    }
+  });
+});
 
 //kids
 app.get("/kids", (req, res) => {
@@ -878,6 +894,58 @@ app.post('/addproducts', upload.array('media', 11), (req, res) => {
   });
 });
 
+app.put('/handleproducts/:id', upload.array('images', 6), (req, res) => {
+  const id = req.params.id;
+  const {
+    name, price, description, location, color, alteration, size, measurements,
+    condition, age, quantity, occasion, material, brand, type, style, fit, length, season, notes, accepted_by_admin
+  } = req.body;
+
+  const deletedImages = JSON.parse(req.body.deletedImages || '[]');
+
+  // Fetch existing images from the database
+  const fetchSql = fetchFindImagesQuery;
+  db.query(fetchSql, [id], (err, result) => {
+    if (err) {
+      console.error('Error fetching existing images:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    // Parse existing images
+    let existingImages = [];
+    if (result.length > 0 && result[0].image) {
+      existingImages = JSON.parse(result[0].image);
+    }
+
+    // Handle uploaded images
+    const newImages = req.files.map(file => file.path); // Simplified to just use the file path
+
+    // Filter out deleted images from existing images
+    let updatedImages = existingImages.filter(image => !deletedImages.includes(image));
+
+    // Combine existing images with new images
+    updatedImages = [...updatedImages, ...newImages];
+
+    // Construct your SQL query for updating product details
+    const updateSql = productsUpdateQuery;
+    const values = [
+      name, price, description, location, color, alteration, size, measurements,
+      condition, age, quantity, occasion, material, brand, type, style, fit, length, season, notes, accepted_by_admin,
+      JSON.stringify(updatedImages), id
+    ];
+
+    // Execute the SQL query to update product details
+    db.query(updateSql, values, (err, result) => {
+      if (err) {
+        console.error('Error updating product:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      console.log('Product updated successfully');
+      return res.status(200).json({ message: 'Product updated successfully' });
+    });
+  });
+});
 
 
 app.delete("/handleproducts/:id", (req, res) => {

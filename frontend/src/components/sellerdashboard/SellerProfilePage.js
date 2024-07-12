@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import MyNavbar from '../navbar';
 import Footer from '../footer';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import TotalReviews from './TotalReviews';
 
 const SellerProfile = () => {
   const { sellerId } = useParams();
+   const location = useLocation();
+  const userdetails = location.state.userdetails;
   const [sellerDetails, setSellerDetails] = useState({});
   const [allProducts, setAllProducts] = useState([]);
   const [sellingProducts, setSellingProducts] = useState([]);
@@ -24,7 +27,14 @@ const SellerProfile = () => {
   });
 
   const { name, email, phone, comment } = formData;
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    if (sessionStorage.getItem("token") !== null) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [setIsLoggedIn]);
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -76,7 +86,6 @@ const SellerProfile = () => {
           setSellingProducts(selling);
           const sold = products.filter(product => product.quantity === 0)
           setSoldProducts(sold);
-          setSavedProducts(products.filter(product => product.saved));
         }
         setLoading(false);
       })
@@ -98,7 +107,18 @@ const SellerProfile = () => {
         console.log(err);
       });
   }, [sellerId]);
-
+  useEffect(() => {
+    axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/getsaveproducts`)
+      .then(res => {
+        if (res.data !== "Fail" && res.data !== "Error") {
+          const products = res.data.filter(product => product.user_id.toString() === sellerId);
+          setSavedProducts(products);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }, [sellerId]);
   const renderProducts = (products) => {
     return (
       <div className="d-flex flex-wrap justify-content-center ms-md-5 me-md-5 mb-4 mt-md-3 mt-3 ms-2 me-2">
@@ -136,8 +156,10 @@ const SellerProfile = () => {
             <div className="seller-profile-header border">
               <div className='m-5'>
                 <h2 className="seller-name fs-1">
-                  <i className="bi bi-person-circle fs-1"></i>&nbsp;{sellerDetails.name}
+                <i className="bi bi-person-circle fs-1"></i>&nbsp;{sellerDetails.shopname==null||undefined||''?sellerDetails.name:sellerDetails.shopname}
                 </h2>
+                <p className='ms-5'><TotalReviews userDetails={userdetails} /></p> 
+
                 <button className="btn btn-primary ms-5" data-bs-toggle="modal" data-bs-target="#exampleModal">
                   Contact Seller
                 </button>
@@ -160,9 +182,11 @@ const SellerProfile = () => {
           <li className="nav-item" role="presentation">
             <button className={`nav-link ${activeTab === 'likes' ? 'active' : ''}`} id="likes-tab" data-bs-toggle="tab" role="tab" onClick={() => setActiveTab('likes')}>Likes</button>
           </li>
+          {isLoggedIn ?(
           <li className="nav-item" role="presentation">
             <button className={`nav-link ${activeTab === 'saved' ? 'active' : ''}`} id="saved-tab" data-bs-toggle="tab" role="tab" onClick={() => setActiveTab('saved')}>Saved</button>
           </li>
+             ):null}
         </ul>
         <div className="tab-content" id="myTabContent">
           <div className={`tab-pane fade ${activeTab === 'all' ? 'show active' : ''}`} id="all" role="tabpanel">
@@ -177,9 +201,12 @@ const SellerProfile = () => {
           <div className={`tab-pane fade ${activeTab === 'likes' ? 'show active' : ''}`} id="likes" role="tabpanel">
             {loading ? <p>Loading...</p> : renderProducts(likedProducts)}
           </div>
-          <div className={`tab-pane fade ${activeTab === 'saved' ? 'show active' : ''}`} id="saved" role="tabpanel">
+         
+            <div className={`tab-pane fade ${activeTab === 'saved' ? 'show active' : ''}`} id="saved" role="tabpanel">
             {loading ? <p>Loading...</p> : renderProducts(savedProducts)}
           </div>
+       
+          
         </div>
       </div>
 

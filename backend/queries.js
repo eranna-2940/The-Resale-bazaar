@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS register (
     user_id INT NOT NULL AUTO_INCREMENT,
     firstname VARCHAR(60) NOT NULL,
     lastname VARCHAR(60) NOT NULL,
-    shopname VARCHAR(90) NOT NULL,
+    shopname VARCHAR(90)  NULL,
     phone BIGINT(10) NOT NULL,
     email VARCHAR(60) NOT NULL,
     password VARCHAR(60) NOT NULL,
@@ -292,6 +292,8 @@ const updateOrderShippmentQuery = "UPDATE orders SET shipped_date = ? WHERE ship
 const updateOrderDeliveredQuery = "UPDATE orders SET delivered_date = ? WHERE shipment_id = ?"
 const updateOrderDeliveredandShippementQuery = "UPDATE orders SET shipped_date = ?, delivered_date = ? WHERE shipment_id = ?"
 // const cartpaymentupdateQuery = "UPDATE cart SET payment_status = ?, buyer_id = ? WHERE id = ?";
+const fetchFindImagesQuery='SELECT image FROM products WHERE id = ?'
+const productsUpdateQuery=`UPDATE products SET name = ?, price = ?, description = ?, location = ?, color = ?, alteration = ?, size = ?, measurements = ?, \`condition\` = ?, age = ?, quantity = ?, occasion = ?,  material = ?, brand = ?, type = ?, style = ?, fit = ?, length = ?, season = ?, notes = ?, accepted_by_admin= ?, image = ? WHERE id = ?`
 
 module.exports = {
   createAdminTableQuery,
@@ -358,5 +360,7 @@ module.exports = {
   updateOrderDeliveredandShippementQuery,
   ReviewsQuery,
   LikesQuery,
-  SavesQuery
+  SavesQuery,
+  fetchFindImagesQuery,
+  productsUpdateQuery
 };

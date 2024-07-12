@@ -6,6 +6,8 @@ import axios from "axios";
 import { useCart } from "./CartContext";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import Reviews from "./Reviews";
+import TotalReviews from "./sellerdashboard/TotalReviews";
 // import { escape } from "../../../Backend/db";
 
 const responsive = {
@@ -219,11 +221,10 @@ export default function Productdetails() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productdetails.seller_id]);
   const navigates = useNavigate();
-  const handleViewProfile = (sellerId) => {
+  const handleViewProfile = (sellerId,userdetails) => {
     console.log(sellerId);
     // Navigate to seller profile page with sellerId as a parameter
-    navigates(`/sellerprofile/${sellerId}`);
-  };
+    navigates(`/sellerprofile/${sellerId}` ,{ state: { userdetails } });  };
  
   useEffect(() => {
     const fetchLikeCount = async () => {
@@ -431,18 +432,16 @@ export default function Productdetails() {
         </nav>
         <div className="p-2 ps-lg-5 pe-lg-5 d-lg-flex">
           <div className="p-2 ps-lg-4 pe-lg-4 d-flex flex-column  col-lg-5">
-          <div className="position-relative">
+          <div className="position-relative ms-auto me-auto text-center productdetailsimgdiv">
   <img
     src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${firstImage}`}
     alt="product"
     className="productdetailsimg"
-    style={{ maxWidth: '100%', height: 'auto' }} 
   />
-  <div onClick={()=>handleSave(productdetails.id,productdetails.seller_id) } style={{ fontSize: '24px', color: saved ? 'yellow': 'grey', cursor: 'pointer' }}>
-  <i className="bi bi-bookmark-fill position-absolute top-0 end-0 m-3" ></i>
+  <div onClick={()=>handleSave(productdetails.id,productdetails.seller_id) } style={{ fontSize: '24px', color: saved ? 'red': 'grey', cursor: 'pointer' }}>
+  <i className="bi bi-bookmark-fill position-absolute top-0 end-0 m-2" ></i>
   </div>
 </div>
-
             <div >
             <div className="ms-5 d-flex gap-2">
             <div
@@ -1001,20 +1000,33 @@ export default function Productdetails() {
             <div className="col-12 col-md-7 mt-3">
               <div className="user-details border shadow-sm p-3 bg-body rounded">
                 {userdetails.map((user) => (
+                  <>
                   <div className="d-flex justify-content-between m-2">
                     <p>
                       <i className="bi bi-person-circle fs-5"></i>
-                      &nbsp;{user.name}
+                      &nbsp;{user.shopname === "" || null || undefined
+                        ? user.shopname
+                        : user.name}
                     </p>
                     <button
                       className="btn btn-outline-primary"
-                      onClick={() => handleViewProfile(user.userId)}
+                      onClick={() => handleViewProfile(user.userId,userdetails)}
                     >
                       Visit Shop
                     </button>
+                    
                   </div>
+                   <p className="ms-3"><TotalReviews  userDetails={userdetails}/></p>
+                </>
                 ))}
               </div>
+              {productdetails.notes !== null && (
+                <div className="p-2">
+                  <b>Notes:</b> {productdetails.notes}
+                </div>
+              )}
+             <Reviews userDetails={userdetails} />
+
             </div>
           </div>
         </div>
