@@ -1550,6 +1550,87 @@ app.get('/shipmentjoin', (req, res) => {
   });
 });
 
+
+
+// Fetch cart items with product details
+app.get('/fetchCartItemsWithProducts', (req, res) => {
+  const userid = req.query.userid;
+  
+  const query = `
+    SELECT 
+      c.id AS cart_item_id,
+      c.userid,
+      c.product_id,
+      c.quantity AS cart_quantity,
+      p.id AS product_id,
+      p.quantity AS product_quantity
+    FROM 
+      cart c
+    INNER JOIN 
+      products p ON c.product_id = p.id
+    WHERE 
+      c.userid = ?;
+  `;
+  
+  db.query(query, [userid], (error, results) => {
+    if (error) {
+      console.error("Error fetching cart items with products:", error);
+      return res.status(500).json({ message: "Error fetching cart items" });
+    }
+    res.json(results);
+  });
+});
+
+// Update payment status and product quantities
+app.post('/updatePaymentAndQuantities', (req, res) => {
+  const { userid, cartItems } = req.body;
+
+  if (!userid || !cartItems || cartItems.length === 0) {
+    return res.status(400).json({ message: 'User ID and cart items are required' });
+  }
+
+  const updatePaymentQuery = `
+    INSERT INTO orders (product_id, payment_status, buyer_id, shipment_id, order_id, ordered_date)
+    VALUES (?, 1, ?, CONCAT('TRBSID', ?, ?), CONCAT('TRBOID', ?, ?), CURDATE());
+  `;
+
+  const updateQuantityQuery = `
+    UPDATE products p
+    INNER JOIN cart c ON p.id = c.product_id
+    SET p.quantity = p.quantity - c.quantity
+    WHERE c.userid = ?;
+  `;
+
+  const deleteCartQuery = `
+    DELETE FROM cart WHERE userid = ?;
+  `;
+
+  // Insert into orders and update quantities
+  cartItems.forEach(item => {
+    db.query(updatePaymentQuery, [item.product_id, userid, userid, item.product_id, userid, item.product_id], (error) => {
+      if (error) {
+        console.error("Error updating payment status:", error);
+        return res.status(500).json({ message: "Error updating payment status" });
+      }
+    });
+  });
+
+  db.query(updateQuantityQuery, [userid], (error) => {
+    if (error) {
+      console.error("Error updating product quantities:", error);
+      return res.status(500).json({ message: "Error updating product quantities" });
+    }
+  });
+
+  db.query(deleteCartQuery, [userid], (error) => {
+    if (error) {
+      console.error("Error deleting cart items:", error);
+      return res.status(500).json({ message: "Error deleting cart items" });
+    }
+    res.json({ message: "Success" });
+  });
+});
+
 // app.post("/updateOrder", (req, res) => {
 //   const { shipment_id, shipped_date, delivered_date } = req.body;
 
