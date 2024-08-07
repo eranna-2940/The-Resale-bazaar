@@ -1,17 +1,20 @@
-
-
 import React, { useState, useEffect } from 'react';
 import Product from './Product';
 import axios from 'axios';
 import MyNavbar from './navbar';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Footer from './footer';
+import Scrolltotopbtn from './Scrolltotopbutton';
 
 const Search = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
-  const { state } = useLocation();
-  const searchTerm = state.termToSearch;
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Extract the search term from URL query parameters
+  const params = new URLSearchParams(location.search);
+  const searchTerm = params.get('q') || '';
 
   // Function to fetch all products
   const fetchAllProducts = () => {
@@ -27,21 +30,30 @@ const Search = () => {
       });
   };
 
+  // Function to normalize words to their base form
+  const normalizeWord = (word) => {
+    return word.replace(/es$/, '').replace(/s$/, '');
+  };
+
   // Filter products based on searchTerm
   useEffect(() => {
-    if (searchTerm) {
+    if (searchTerm && searchTerm.trim() !== '') {
       const lowerCaseTerm = searchTerm.toLowerCase();
+      const normalizedTerm = normalizeWord(lowerCaseTerm);
       const results = allProducts.filter((product) => (
         product.name.toLowerCase().includes(lowerCaseTerm) ||
         product.color.toLowerCase().includes(lowerCaseTerm) ||
         product.price.toString().includes(lowerCaseTerm) ||
-        product.size.toLowerCase().includes(lowerCaseTerm)
+        product.size.toLowerCase().includes(lowerCaseTerm) ||
+        product.name.toLowerCase().includes(normalizedTerm)
       ));
       setFilteredProducts(results);
     } else {
       setFilteredProducts([]);
+      // Optionally redirect to home if no search term
+      navigate('/');
     }
-  }, [searchTerm, allProducts]);
+  }, [searchTerm, allProducts, navigate]);
 
   // Fetch all products on component mount
   useEffect(() => {
@@ -50,26 +62,30 @@ const Search = () => {
 
   return (
     <div className="fullscreen">
-        <MyNavbar />
+      <MyNavbar />
       <main>
-        <h6 className="container mt-3" style={{ fontSize: '20px' }}>Search Results for: "{searchTerm}"</h6>
+        {searchTerm && searchTerm.trim() !== '' && (
+          <>
+            <h6 className="container mt-3" style={{ fontSize: '20px' }}>Search Results for: "{searchTerm}"</h6>
 
-        <div className="d-flex justify-content-center">
-          <div className="d-md-flex flex-wrap gap-4 ms-md-5 me-md-5 mb-4 mt-md-3 mt-3 ms-2 me-2 justify-content-start">
-            {(filteredProducts.length > 0) ? (
-              filteredProducts.map((product, index) => (
-                <div key={index}>
-                  <Product product={product} admin="home" />
-                </div>
-              ))
-            ) : (
-              <h6 className="text-center mb-4" style={{ fontSize: '20px' }}>No products match your search</h6>
-            )}
-          </div>
-        </div>
-
+            <div className="d-flex justify-content-center">
+              <div className="product-grid container">
+                {(filteredProducts.length > 0) ? (
+                  filteredProducts.map((product, index) => (
+                    <div key={index}>
+                      <Product product={product} admin="home" />
+                    </div>
+                  ))
+                ) : (
+                  <h6 className="text-center mb-4" style={{ fontSize: '20px' }}>No products match your search</h6>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </main>
-      <Footer/>
+      <Footer />
+      <Scrolltotopbtn />
     </div>
   );
 };

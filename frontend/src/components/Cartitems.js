@@ -1,91 +1,498 @@
-import React from "react";
+// import React from "react";
+// import { useCart } from "./CartContext";
+// import { useNavigate } from "react-router-dom";
+// import MyNavbar from "./navbar";
+// import Footer from "./footer";
+// // import { Link } from "react-router-dom";
+// import Cartemptyimg from '../images/cartempty.png'
+
+// export default function Cartitems() {
+//   const navigate = useNavigate();
+//   const { cartItems, calculateTotalPrice, removeFromCart } = useCart();
+//   const totalPrice = calculateTotalPrice();
+
+//   const checkout = () => {
+//     if (sessionStorage.getItem("token") !== null) {
+//       navigate("/checkoutpage");
+//     } else {
+//       navigate("/login");
+//     }
+//   };
+//   return (
+//     <div className="fullscreen">
+//       <MyNavbar />
+//       <main>
+//         <div className="container p-md-5 pt-4">
+         
+//           <div className="table-responsive">
+//           <table className="table table-hover">
+//             <thead>
+//               <tr className="">
+//                 <th className="bg-secondary text-white">#</th>
+//                 <th className="bg-secondary text-white">Product Image</th>
+//                 <th className="bg-secondary text-white">Product Name</th>
+//                 <th className="bg-secondary text-white">Price</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+            
+//               {cartItems.length > 0 ? (
+//               cartItems.map((product, index) => (
+//                 <tr key={index}>
+//                   <td>
+//                     <button
+//                       type="button"
+//                       className="btn-close w-50"
+//                       onClick={() => removeFromCart(product.id)}
+//                     ></button>
+//                   </td>
+//                   <td>
+//                    <div style={{width:"70px", height:"60px" }}>
+//                    <img
+//                       src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(product.image)[0]}`}
+//                       alt={product.name}
+//                       style={{ maxWidth: "100%", maxHeight: "100%" ,backgroundSize:"contain"}}
+//                     />
+//                    </div>
+//                   </td>
+//                   <td className="text-secondary">{product.name}</td>
+//                   <td>&#36; {product.price}</td>
+//                 </tr>
+//               ))
+//             ): (
+//               <tr>
+//               <td colSpan={4} className="text-center">
+//               <img src={Cartemptyimg} alt="Your Cart is Empty" width="280" height="280" style={{objectFit:"contain"}}/>
+//               </td>
+//             </tr>
+//             )
+//             }
+//             </tbody>
+//           </table>
+//           </div>
+//         </div>
+//         <div className="container mt-2">
+//           <div className="d-flex flex-wrap gap-3 float-end me-2">
+//             <p className="mt-1"><b>Total Price: &#36; {totalPrice}</b></p>
+//             <button
+//               type="button"
+//               className="btn btn-primary mb-5"
+//               disabled={cartItems.length === 0} // Disable the button if cart is empty
+//               onClick={checkout}
+//             >
+//               Checkout
+//             </button>
+//           </div>
+//         </div>
+//       </main>
+//       <Footer />
+//     </div>
+//   );
+// }
+import React, { useEffect, useState } from "react";
 import { useCart } from "./CartContext";
 import { useNavigate } from "react-router-dom";
 import MyNavbar from "./navbar";
 import Footer from "./footer";
-// import { Link } from "react-router-dom";
-import Cartemptyimg from '../images/cartempty.png'
+import Cartemptyimg from "../images/cartempty.png";
+import axios from "axios";
+import Scrolltotopbtn from "./Scrolltotopbutton";
+import Notification from "./Notification";
 
 export default function Cartitems() {
   const navigate = useNavigate();
-  const { cartItems, calculateTotalPrice, removeFromCart } = useCart();
-  const totalPrice = calculateTotalPrice();
+  const {
+    cartItems,
+    calculateTotalPrice,
+    removeFromCart,
+    updateCartItemQuantity,
+    notification,
+    setNotification,
+    guest_product,
+    setGuest_product,
+    isLoggedIn,
+    setIsLoggedIn
+  } = useCart();
+  const [products, setProducts] = useState([]); // State to hold fetched products
+  const [message, setMessage] = useState("");
 
+  useEffect(()=>{
+    const updateGuestProduct = () => {
+      const products = JSON.parse(sessionStorage.getItem("guest_products")) || [];
+      setGuest_product(products);
+    };
+    updateGuestProduct();
+    window.addEventListener("storage", updateGuestProduct);
+    return () => {
+      window.removeEventListener("storage", updateGuestProduct);
+    };
+  },[setGuest_product])
+
+  useEffect(() => {
+    if (sessionStorage.getItem("token") !== "admin") {
+      sessionStorage.getItem("user-token") !== null && setIsLoggedIn(true);
+    }
+    axios
+      .get(
+        `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/sellerproducts`
+      )
+      .then((res) => {
+        if (res.data !== "Fail" && res.data !== "Error") {
+          setProducts(res.data); // Assuming response.data contains the product array
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching seller products:", error);
+      });
+  }, [setIsLoggedIn]);
+
+  // const checkout = () => {
+  //   if (sessionStorage.getItem("token") !== "admin" && isLoggedIn) {
+  //     const updateRequests = cartItems.map((product) => {
+  //       const quantity = product.quantity;
+  //       return axios.put(
+  //         `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/${product.id}/updateQuantityAndPrice`,
+  //         {
+  //           quantity: quantity,
+  //         }
+  //       );
+  //     });
+  //     Promise.all(updateRequests)
+  //       .then((responses) => {
+  //         responses.forEach((response) => {
+  //           console.log(response.data.message);
+  //         });
+  //         navigate("/checkoutpage");
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error updating quantities and prices:", error);
+  //       });
+  //   } else {
+  //     navigate("/login");
+  //   }
+  // };
   const checkout = () => {
-    if (sessionStorage.getItem("token") !== null) {
+    if (sessionStorage.getItem("token") !== "admin" && isLoggedIn) {
       navigate("/checkoutpage");
     } else {
       navigate("/login");
     }
   };
+  
+  const guestCheckout = () => {
+    navigate("/guestcheckout")
+  }
+
+  // const handleQuantityChange = (product, newQuantity) => {
+  //   if (isLoggedIn) {
+  //     const availableProduct = products.find(
+  //       (p) => p.id === product.product_id
+  //     );
+  //     if (newQuantity > availableProduct.quantity) {
+  //       setMessage(
+  //         `Cannot increase quantity beyond available stock: ${availableProduct.quantity}`
+  //       );
+  //     } else {
+  //       setMessage("");
+  //       updateCartItemQuantity(product.id, newQuantity);
+  //     }
+  //   } else {
+  //     const availableProducts = products.find(
+  //       (p) => p.id === product.id
+  //     );
+  //     if (newQuantity > availableProducts.quantity) {
+  //       setMessage(
+  //         `Cannot increase quantity beyond available stock: ${availableProducts.quantity}`
+  //       );
+  //     } else {
+  //       setMessage("");
+  //       const productIndex = guest_product.findIndex(
+  //         (item) => item.id === product.id
+  //       );
+  //       if (productIndex !== -1) {
+  //         guest_product[productIndex] = {
+  //           ...guest_product[productIndex],
+  //           quantity: newQuantity,
+  //         };
+  //         sessionStorage.setItem(
+  //           "guest_products",
+  //           JSON.stringify(guest_product)
+  //         );
+  //         console.log("Product updated successfully");
+  //         window.location.reload(false);
+  //       } else {
+  //         console.log("Product not found in the cart");
+  //       }
+  //     }
+  //   }
+  // };
+  const handleQuantityChange = (product, newQuantity) => {
+    if (isLoggedIn) {
+      // Handle quantity change for logged-in users
+      const availableProduct = products.find(
+        (p) => p.id === product.product_id
+      );
+  
+      if (newQuantity > (availableProduct?.quantity || 0)) {
+        setMessage(
+          `Cannot increase quantity beyond available stock: ${availableProduct?.quantity || 0}`
+        );
+        return;
+      }
+  
+      setMessage("");
+      updateCartItemQuantity(product.id, newQuantity);
+  
+      // PUT request to update the quantity on the server
+      axios.put(
+        `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/${product.id}/updateQuantityAndPrice`,
+        { quantity: newQuantity }
+      )
+      .then((response) => {
+        // console.log("Server quantity updated successfully");
+      })
+      .catch((error) => {
+        console.error("Error updating product quantity on the server:", error);
+      });
+  
+    } else {
+      // Handle quantity change for guest users
+      const availableProducts = products.find(
+        (p) => p.id === product.id
+      );
+  
+      if (newQuantity > (availableProducts?.quantity || 0)) {
+        setMessage(
+          `Cannot increase quantity beyond available stock: ${availableProducts?.quantity || 0}`
+        );
+        return;
+      }
+  
+      setMessage("");
+      const productIndex = guest_product.findIndex(
+        (item) => item.id === product.id
+      );
+  
+      if (productIndex !== -1) {
+        guest_product[productIndex] = {
+          ...guest_product[productIndex],
+          quantity: newQuantity,
+        };
+        sessionStorage.setItem(
+          "guest_products",
+          JSON.stringify(guest_product)
+        );
+        console.log("Guest product updated successfully");
+        window.location.reload(false);
+      }
+    }
+  };
+  
+  
+  const totalPrice = calculateTotalPrice();
+
   return (
     <div className="fullscreen">
       <MyNavbar />
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
       <main>
         <div className="container p-md-5 pt-4">
-         
           <div className="table-responsive">
-          <table className="table table-hover">
-            <thead>
-              <tr className="">
-                <th className="bg-secondary text-white">#</th>
-                <th className="bg-secondary text-white">Product Image</th>
-                <th className="bg-secondary text-white">Product Name</th>
-                <th className="bg-secondary text-white">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-            
-              {cartItems.length > 0 ? (
-              cartItems.map((product, index) => (
-                <tr key={index}>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn-close w-50"
-                      onClick={() => removeFromCart(product.id)}
-                    ></button>
-                  </td>
-                  <td>
-                   <div style={{width:"70px", height:"60px" }}>
-                   <img
+            <table className="table table-hover">
+              <thead>
+                <tr className="">
+                  <th className="bg-light">#</th>
+                  <th className="bg-light">Product Image</th>
+                  <th className="bg-light">Product Name</th>
+                  <th className="bg-light">Price</th>
+                  <th className="bg-light">Quantity</th>
+                  <th className="bg-light">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoggedIn ? (
+                  cartItems.length > 0 ? (
+                    cartItems.map((product, index) => (
+                      <tr key={index}>
+                        <td>
+                          <button
+                            type="button"
+                            className="btn-close w-50"
+                            onClick={() => removeFromCart(product.id)}
+                          ></button>
+                        </td>
+                        <td>
+                          <div style={{ width: "70px", height: "60px" }}>
+                            <img
+                      src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(product.image)[0]}`}
+                              alt={product.name}
+                              style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                backgroundSize: "contain",
+                              }}
+                            />
+                          </div>
+                        </td>
+                        <td className="text-secondary">{product.name}</td>
+                        <td>&#36; {product.price}</td>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            <button
+                              className="btn btn-sm btn-outline-secondary me-2"
+                              onClick={() =>
+                                handleQuantityChange(
+                                  product,
+                                  product.quantity - 1
+                                )
+                              }
+                              disabled={product.quantity <= 1}
+                            >
+                              -
+                            </button>
+                            <span>{product.quantity}</span>
+                            <button
+                              className="btn btn-sm btn-outline-secondary ms-2"
+                              onClick={() =>
+                                handleQuantityChange(
+                                  product,
+                                  product.quantity + 1
+                                )
+                              }
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td>&#36; {product.price * product.quantity}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="text-center">
+                        <img
+                          src={Cartemptyimg}
+                          alt="Your Cart is Empty"
+                          width="280"
+                          height="280"
+                          style={{ objectFit: "contain" }}
+                        />
+                      </td>
+                    </tr>
+                  )
+                ) : guest_product.length > 0 ? (
+                  guest_product.map((product, index) => (
+                    <tr key={index}>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn-close w-50"
+                          onClick={() => removeFromCart(product.id)}
+                        ></button>
+                      </td>
+                      <td>
+                        <div style={{ width: "70px", height: "60px" }}>
+                          <img
                       src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(product.image)[0]}`}
                       alt={product.name}
-                      style={{ maxWidth: "100%", maxHeight: "100%" ,backgroundSize:"contain"}}
-                    />
-                   </div>
-                  </td>
-                  <td className="text-secondary">{product.name}</td>
-                  <td>&#36; {product.price}</td>
-                </tr>
-              ))
-            ): (
-              <tr>
-              <td colSpan={4} className="text-center">
-              <img src={Cartemptyimg} alt="Your Cart is Empty" width="280" height="280" style={{objectFit:"contain"}}/>
-              </td>
-            </tr>
-            )
-            }
-            </tbody>
-          </table>
+                            style={{
+                              maxWidth: "100%",
+                              maxHeight: "100%",
+                              backgroundSize: "contain",
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td className="text-secondary">{product.name}</td>
+                      <td>&#36; {product.price}</td>
+                      <td>
+                        <div className="d-flex align-items-center">
+                          <button
+                            className="btn btn-sm btn-outline-secondary me-2"
+                            onClick={() =>
+                              handleQuantityChange(
+                                product,
+                                product.quantity - 1
+                              )
+                            }
+                            disabled={product.quantity <= 1}
+                          >
+                            -
+                          </button>
+                          <span>{product.quantity}</span>
+                          <button
+                            className="btn btn-sm btn-outline-secondary ms-2"
+                            onClick={() =>
+                              handleQuantityChange(
+                                product,
+                                product.quantity + 1
+                              )
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td>&#36; {product.price*product.quantity}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center">
+                      <img
+                        src={Cartemptyimg}
+                        alt="Your Cart is Empty"
+                        width="280"
+                        height="280"
+                        style={{ objectFit: "contain" }}
+                      />
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
-        <div className="container mt-2">
+        {message && (
+          <div className="container">
+            <div className="alert alert-warning">{message}</div>
+          </div>
+        )}
+        <div className="container">
+        <p className="mt-1 text-end me-2">
+              <b>Total Price: &#36; {totalPrice}</b>
+            </p>
           <div className="d-flex flex-wrap gap-3 float-end me-2">
-            <p className="mt-1"><b>Total Price: &#36; {totalPrice}</b></p>
+            {!isLoggedIn && 
             <button
               type="button"
               className="btn btn-primary mb-5"
-              disabled={cartItems.length === 0} // Disable the button if cart is empty
+              disabled={guest_product.length === 0}
+              onClick={guestCheckout}
+            >
+              Guest Checkout
+            </button>
+            }
+            <button
+              type="button"
+              className="btn btn-primary mb-5"
+              disabled={(isLoggedIn && cartItems.length === 0) || (!isLoggedIn && guest_product.length === 0) }
               onClick={checkout}
             >
-              Checkout
+              Member Checkout
             </button>
           </div>
         </div>
       </main>
       <Footer />
+      <Scrolltotopbtn />
     </div>
   );
 }

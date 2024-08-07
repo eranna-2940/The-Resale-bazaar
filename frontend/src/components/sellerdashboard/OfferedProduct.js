@@ -1,109 +1,10 @@
-// import React, { useEffect, useState } from "react";
-// // import { useCart } from "./CartContext";
-// import { Link} from "react-router-dom";
-// import axios from "axios";
-// import TotalReviews from "./sellerdashboard/TotalReviews";
-
-// const Product = (props) => {
-//   //eslint-disable-next-line no-unused-vars
-//   const [existingProducts, setExistingProducts] = useState([]);
-//     // eslint-disable-next-line no-unused-vars 
-//   const [isLoggedIn, setIsLoggedIn] = useState(false);
-//   // const navigate = useNavigate();
-
-//   // const { addToCart, addToWishlist, cartItems, wishItems } = useCart();
-//   props.product.userid = sessionStorage.getItem("user-token");
-//   // console.log(cartItems.length);
-//   useEffect(() => {
-//     axios
-//       .get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/addcart`)
-//       .then((response) => {
-//         if (response.data !== "Fail" && response.data !== "Error") {
-//           if (Array.isArray(response.data)) {
-//             setExistingProducts(response.data);
-//           }
-//         }
-//       })
-//       .catch((error) => {
-//         console.error("Error fetching cart items:", error);
-//       });
-
-//     if (sessionStorage.getItem("token") !== "admin") {
-//       sessionStorage.getItem("user-token") !== null && setIsLoggedIn(true);
-//     }
-//   }, []);
-
-//   // const handleAddToWishlist = () => {
-//   //   if (isLoggedIn) {
-//   //     addToWishlist(props.product);
-//   //   } else {
-//   //     navigate("/login");
-//   //   }
-//   // };
-//   // const handleAddToWishlist = () => {
-//   //   const isProductInWishlist = wishItems.some(
-//   //     (item) => item.product_id === props.product.id
-//   //   );
-//   //   if (isProductInWishlist) {
-//   //     alert("Product already exists in the wishlist");
-//   //     return; // Exit the function early
-//   //   } else if (isLoggedIn) {
-//   //     addToWishlist(props.product);
-//   //   } else {
-//   //     navigate("/login");
-//   //   }
-//   // };
-
-//   // const handleAddToCart = () => {
-//   //   const isProductInCart = cartItems.some(
-//   //     (item) => item.product_id === props.product.id
-//   //   );
-//   //   if (isProductInCart) {
-//   //     alert("Product already exists in the cart");
-//   //   } else if (isLoggedIn) {
-//   //     addToCart(props.product, "main");
-//   //   } else {
-//   //     navigate("/login");
-//   //   }
-//   // };
-//   const datta = JSON.parse(props.product.image);
-//   const firstImage = datta[0];
-
-//   return (
-//     <div className="d-flex justify-content-center">
-//       <div className="card productcard">
-//         <Link
-//           to={"/product/" + props.product.id}
-//           state={{ productdetails: props.product, admin: props.admin }}
-//         >
-//           <div className="text-center productimgback">
-//             <img
-//               src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${firstImage}`}
-//               className="card-img-top"
-//               alt="product"
-//             />
-//           </div>
-//         </Link>
-
-//         <div className="card-body">
-//           <p className="card-text text-success">
-//             <b>&#36; {props.product.price}.00</b>
-//           </p>
-//           {props.product.size !== "NA" &&
-//           <h6 className="card-text" style={{lineHeight:"8px"}}>{props.product.size}</h6>  
-//           }       
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-// export default Product;
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Carousel from "react-bootstrap/Carousel";
-// import TotalReviews from "./TotalReviews";
+import { useCart } from "../CartContext";
+ // eslint-disable-next-line no-unused-vars
+import { Link } from "react-router-dom";
 
 const truncateName = (name, maxLength) => {
   if (name.length > maxLength) {
@@ -112,7 +13,7 @@ const truncateName = (name, maxLength) => {
   return name;
 };
 
-const Product = (props) => {
+const OfferedProduct = (props) => {
   // eslint-disable-next-line no-unused-vars
   const [existingProducts, setExistingProducts] = useState([]);
   // eslint-disable-next-line no-unused-vars
@@ -121,6 +22,9 @@ const Product = (props) => {
   const [sliding, setSliding] = useState({});
   const [showIndicators, setShowIndicators] = useState({});
   const [userDetails, setUserDetails] = useState([]);
+   // eslint-disable-next-line no-unused-vars
+  const {addToCart,addToWishlist} = useCart()
+
 
   props.product.userid = sessionStorage.getItem("user-token");
 
@@ -164,6 +68,7 @@ const Product = (props) => {
       });
   }, [props.product.image, props.product.seller_id]);
 
+  const datta = JSON.parse(props.product.image);
 
   const handleMouseEnter = (id) => {
     setShowIndicators((prevState) => ({
@@ -219,8 +124,6 @@ const Product = (props) => {
   }, []);
 
   const truncatedName = truncateName(props.product.name, maxLength);
-  const datta = JSON.parse(props.product.image);
-  const firstImage = datta[0];
 
   return (
     <div className="d-flex justify-content-center">
@@ -228,14 +131,13 @@ const Product = (props) => {
         className="card productcard product-card"
         style={{ opacity: props.product.quantity === 0 ? 0.5 : 1 }}
       >
-        <Link
-          to={"/product/" + props.product.id}
+    {/* <Link
+          to={"/offeredproductdetails/" + props.product.product_id}
           state={{
             productdetails: props.product,
-            admin: props.admin,
             userDetails: userDetails,
           }}
-        >
+        > */}
           <div
             className="text-center productimgback position-relative"
             onMouseEnter={() => handleMouseEnter(props.product.id)}
@@ -276,7 +178,7 @@ const Product = (props) => {
                     </video>
                   ) : (
                     <img
-                      src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${firstImage}`}
+                      src={item}
                       className="d-block w-100"
                       alt={`product-${index}`}
                       style={{ height: "220px", objectFit: "cover" }}
@@ -295,14 +197,7 @@ const Product = (props) => {
            
             )}
           </div>
-          </Link>
-
-          {/* <div
-        className="position-absolute top-0 end-0 m-2 p-1 bg-dark rounded"
-        style={{ fontSize: "1rem", fontWeight: "bold" }}
-      >
-        <TotalReviews userDetails={props.product.id} />
-      </div>         */}
+          {/* </Link> */}
         <div className="card-body">
           {userDetails.length > 0 && (
             <p
@@ -331,12 +226,38 @@ const Product = (props) => {
             className="card-text"
             style={{ lineHeight: "15px", marginTop: "-8px" }}
           >
-            <b>&#36; {props.product.price}.00</b>
+            <b>&#36; {props.product.offered_price}.00</b>
           </p>
+          <div className="text-center">
+          {props.product.quantity > 0 && (  
+            <>
+          <button
+                                onClick={() => {
+                                    props.product.price = props.product.offered_price
+                                     props.product.id = props.product.product_id
+                                    addToCart(props.product, "main")
+                                }}
+                                className="btn btn-sm btn-secondary me-2"
+                            >
+                                Add to Cart
+                            </button>
+                            {/* <button
+                            onClick={() => {
+                                props.product.price = props.product.offered_price
+                                 props.product.id = props.product.product_id
+                                 addToWishlist(props.product, "main")
+                            }}
+                            className="btn btn-sm btn-secondary"
+                        >
+                            Add to Wish
+                        </button> */}
+                        </>
+                            )}
+                            </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Product;
+export default OfferedProduct;

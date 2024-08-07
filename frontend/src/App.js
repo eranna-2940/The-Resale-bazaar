@@ -58,6 +58,7 @@ import SellerProfile from "./components/sellerdashboard/SellerProfilePage";
 import Scrolltotop from "./components/Scrolltotop";
 import ContactSeller from "./components/sellerdashboard/ContactSeller";
 import ReviewRatings from "./components/customerdetails/reviewsRatings";
+import CancelOrder from "./components/customerdetails/CancelOrder";
 
 
 function App() {
@@ -79,7 +80,7 @@ function App() {
 
   return (
     <>
-      <BrowserRouter basename="Resale-bazaar">
+      <BrowserRouter >
         <Scrolltotop />
         <Routes>
           {/* Login routes */}
@@ -218,7 +219,12 @@ function App() {
           <Route path="/contactseller" element={<ContactSeller/>}/>
           <Route path="/feedback" element={<ReviewRatings/>}/>
 
-
+          <Route path="/cancelorder" element={
+                              <ProtectedRoute>
+                              {isUserLoggedIn && <CancelOrder />}
+                            </ProtectedRoute>
+              
+              } />
         </Routes>
       </BrowserRouter>
     </>
