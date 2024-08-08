@@ -1086,7 +1086,8 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Reviews from "./Reviews";
 import Scrolltotopbtn from "./Scrolltotopbutton";
-import Notification from "./Notification";
+import Notification from "./Notification"; 
+import TotalReviews from "./sellerdashboard/TotalReviews";
 
 const responsive = {
   extraLargeDesktop: {
@@ -1245,7 +1246,7 @@ export default function Productdetails() {
     if (["mp4", "webm", "avi", "mov", "quicktime"].includes(extension)) {
       productDetailsImgRef.current.innerHTML = `
         <video
-          src=${product}
+          src=${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}
           controls
           class="productdetailsimg"
         >
@@ -1255,7 +1256,7 @@ export default function Productdetails() {
     } else {
       productDetailsImgRef.current.innerHTML = `
         <img
-          src=${product}
+          src=${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}
           alt="product"
           class="productdetailsimg"
         />
@@ -1366,10 +1367,9 @@ export default function Productdetails() {
       })
       .catch((error) => console.log(error));
   }, [offer, handleOffer, productdetails.seller_id]);
-
   const navigates = useNavigate();
   const handleViewProfile = (sellerId) => {
-    navigates(`/sellerprofile/${sellerId}`, { state: { userDetails } });
+    navigates(`/sellerprofile/${sellerId}`, { state: { userdetails } });
   };
 
   useEffect(() => {
@@ -1490,7 +1490,7 @@ export default function Productdetails() {
             >
               {/* Initial display of firstImage */}
               <img
-                src={firstImage}
+                src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${firstImage}`}
                 alt="product"
                 className="productdetailsimg"
               />
@@ -1508,82 +1508,83 @@ export default function Productdetails() {
             </div>
 
             <div className="ms-auto me-auto">
-              <Carousel
-                responsive={responsive}
-                className="mt-2 productdetailscarousel"
-                ref={carouselRef}
-                beforeChange={(nextSlide) => setCurrentSlide(nextSlide)}
+      <Carousel
+        responsive={responsive}
+        className="mt-2 productdetailscarousel"
+        ref={carouselRef}
+        beforeChange={(nextSlide) => setCurrentSlide(nextSlide)}
+      >
+        {datta.map((product, index) => (
+          <div
+            className="card m-3"
+            key={index}
+            id={`subimage-${index}`}
+            onClick={() => updateProductDetailsImg(product, index)}
+            style={{
+              border:
+                currentSlide === index
+                  ? '3px solid green'
+                  : '1px solid grey',
+              position: 'relative',
+            }}
+          >
+            {['mp4', 'webm', 'avi', 'mov', 'quicktime'].includes(
+              product.split('.').pop().toLowerCase()
+            ) ? (
+              <div
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: '110px',
+                }}
               >
-                {datta.map((product, index) => (
-                  <div
-                    className="card m-3"
-                    key={index}
-                    id={`subimage-${index}`}
-                    onClick={() => updateProductDetailsImg(product, index)}
-                    style={{
-                      border:
-                        currentSlide === index
-                          ? "3px solid green"
-                          : "1px solid grey",
-                      position: "relative",
-                    }}
-                  >
-                    {["mp4", "webm", "avi", "mov", "quicktime"].includes(
-                      `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}`
-                        .split(".")
-                        .pop()
-                        .toLowerCase()
-                    ) ? (
-                      <div
-                        style={{
-                          position: "relative",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          height: "110px",
-                        }}
-                      >
-                        <video
-                          style={{
-                            cursor: "pointer",
-                            maxWidth: "100%",
-                            height: "100%",
-                            objectFit: "contain",
-                            alignSelf: "center",
-                            padding: "3px",
-                          }}
-                        >
-                          <source src={product} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                        <i
-                          className="bi bi-play-btn-fill"
-                          style={{
-                            position: "absolute",
-                            fontSize: "2rem",
-                            color: "white",
-                            pointerEvents: "none",
-                          }}
-                        ></i>
-                      </div>
-                    ) : (
-                      <img
-                        src={product}
-                        alt="images"
-                        style={{
-                          cursor: "pointer",
-                          maxWidth: "100%",
-                          height: "110px",
-                          objectFit: "contain",
-                          alignSelf: "center",
-                          padding: "3px",
-                        }}
-                      />
-                    )}
-                  </div>
-                ))}
-              </Carousel>
-            </div>
+                <video
+                  style={{
+                    cursor: 'pointer',
+                    maxWidth: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    alignSelf: 'center',
+                    padding: '3px',
+                  }}
+                  controls
+                >
+                  <source
+                    src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}`}
+                    type={`video/${product.split('.').pop().toLowerCase()}`}
+                  />
+                  Your browser does not support the video tag.
+                </video>
+                <i
+                  className="bi bi-play-btn-fill"
+                  style={{
+                    position: 'absolute',
+                    fontSize: '2rem',
+                    color: 'white',
+                    pointerEvents: 'none',
+                  }}
+                ></i>
+              </div>
+            ) : (
+              <img
+                src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}`}
+                alt="Product"
+                style={{
+                  cursor: 'pointer',
+                  maxWidth: '100%',
+                  height: '110px',
+                  objectFit: 'contain',
+                  alignSelf: 'center',
+                  padding: '3px',
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </Carousel>
+    </div>
           </div>
           <div className="ps-md-3 p-2 col-lg-7 detailsdiv">
             <h1 className="text-secondary fs-2">{productdetails.name}</h1>
@@ -2090,6 +2091,7 @@ export default function Productdetails() {
             <div className="col-12 col-md-7 mt-3">
               <div className="user-details border shadow-sm p-3 bg-body rounded">
                 {userdetails.map((user, index) => (
+                  <>
                   <div
                     className="d-flex justify-content-between m-2"
                     key={index}
@@ -2101,14 +2103,19 @@ export default function Productdetails() {
                         ? user.name
                         : user.shopname}
                     </p>
+
                     <button
                       className="btn btn-outline-primary"
                       onClick={() => handleViewProfile(user.userId)}
                     >
                       Visit Shop
                     </button>
+
                   </div>
+                  <p className="ms-2"><TotalReviews  userDetails={userdetails}/></p>
+</>
                 ))}
+
               </div>
               {productdetails.notes !== null && (
                 <div className="p-2">

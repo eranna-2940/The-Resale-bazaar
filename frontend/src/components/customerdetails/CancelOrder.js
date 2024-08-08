@@ -102,7 +102,7 @@ const CancelOrder = () => {
         <div className='d-md-flex justify-content-between bg-light p-2 p-md-4 border'>
           <div>
             {productImage.length > 0 ? (
-              <img src={productImage[0]} alt={product.name} width="100" height="100" />
+              <img src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${productImage[0]}`} alt={product.name} width="100" height="100" />
             ) : (
               <p>No image available</p>
             )}

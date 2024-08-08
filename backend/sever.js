@@ -380,7 +380,19 @@ app.get("/user", (req, res) => {
     }
   });
 });
-
+app.post("/users", (req, res) => {
+  const sql = "select * from register where user_id = ?";
+  db.query(sql, [parseInt(req.body.sellerID)], (err, data) => {
+    if (err) {
+      return res.json("Error");
+    }
+    if (data.length > 0) {
+      return res.json(data);
+    } else {
+      return res.json("Fail");
+    }
+  });
+});
 app.post("/offers/:offerId/accept", (req, res) => {
   const { offerId } = req.params;
   const sql = updatedOfferProductAcceptedQuery;
@@ -1628,12 +1640,12 @@ app.post('/saves/check', (req, res) => {
   });
 });
 app.post('/reviews', upload.array('images', 5), (req, res) => {
-  const { rating, description, title ,sellerId ,buyerId} = req.body;
+  const { rating, description, title ,sellerId ,buyerId,productId} = req.body;
   const images = req.files.map(file => file.filename); // Extract filenames from the uploaded files
   const createdAt = new Date(); 
   const updatedAt = new Date();
-  const query = 'INSERT INTO review (rating, description, title, images ,seller_id,buyer_id,created_at, updated_at) VALUES (?, ?, ?, ?,?,?,?,?)';
-  db.query(query, [rating, description, title, JSON.stringify(images),sellerId,buyerId,createdAt, updatedAt], (err, result) => {
+  const query = 'INSERT INTO review (rating, description, title, images ,seller_id,buyer_id,review_productID,created_at, updated_at) VALUES (?, ?, ?, ?,?,?,?,?,?)';
+  db.query(query, [rating, description, title, JSON.stringify(images),sellerId,buyerId,productId,createdAt, updatedAt], (err, result) => {
     if (err) {
       console.error('Error inserting review:', err);
       res.status(500).send({ message: 'Error inserting review' });

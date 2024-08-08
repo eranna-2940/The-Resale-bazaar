@@ -9,7 +9,7 @@ import TotalReviews from './TotalReviews';
 const SellerProfile = () => {
   const { sellerId } = useParams();
    const location = useLocation();
-  const userdetails = location.state.userdetails;
+  const userdetails = location.state.userdetails
   const [sellerDetails, setSellerDetails] = useState({});
   const [allProducts, setAllProducts] = useState([]);
   const [sellingProducts, setSellingProducts] = useState([]);

@@ -146,7 +146,9 @@ export default function Finalcheckoutpage() {
     axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/addcart`)
       .then((response) => {
         if (response.data !== "Fail" && response.data !== "Error") {
-          const filteredProducts = response.data.filter((item) => item.userid=== token);
+          const filteredProducts = response.data.filter((item) => {
+            return item.userid && item.userid.toString() === token;
+          });
           setCartItems(filteredProducts);
 
           // Proceed to update payment status

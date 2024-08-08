@@ -7,6 +7,7 @@ import Customerbanner from "./Customerbanner";
 
 export default function Addresses() {
   const [addresses, setAddresses] = useState([]);
+  const [billingAddress,setBillingAddress]=useState([])
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     firstname: "",
@@ -18,7 +19,15 @@ export default function Addresses() {
     address1: "",
     pincode: "",
   });
-
+ useEffect (()=>{
+         axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/saveBillingAddress`)
+         .then((res)=>{
+            if(res.data !== "Fail" && res.data !== "Error"){
+              const userid = sessionStorage.getItem("user-token")
+                 setBillingAddress(res.data.filter((item)=> item.user_id === parseInt(userid)))
+            }
+         })
+ },[])
   useEffect(() => {
     const fetchAddresses = async () => {
       try {

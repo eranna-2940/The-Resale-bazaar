@@ -292,7 +292,7 @@ export default function Orders() {
                               style={{ textDecoration: 'none', color: 'inherit' }}
                             >
                               <img
-                                src={`${product.image ? JSON.parse(product.image)[0] : 'defaultImagePath'}`}
+                                src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product.image ? JSON.parse(product.image)[0] : 'defaultImagePath'}`}
                                 alt={product.name}
                                 style={{ maxWidth: "60px", maxHeight: "100px" }}
                               />

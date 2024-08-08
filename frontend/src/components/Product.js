@@ -103,7 +103,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Carousel from "react-bootstrap/Carousel";
-// import TotalReviews from "./TotalReviews";
+import AverageReviews from "./AverageReviews";
 
 const truncateName = (name, maxLength) => {
   if (name.length > maxLength) {
@@ -163,7 +163,6 @@ const Product = (props) => {
         console.error("Error fetching seller details:", error);
       });
   }, [props.product.image, props.product.seller_id]);
-
 
   const handleMouseEnter = (id) => {
     setShowIndicators((prevState) => ({
@@ -297,12 +296,12 @@ const Product = (props) => {
           </div>
           </Link>
 
-          {/* <div
+          <div
         className="position-absolute top-0 end-0 m-2 p-1 bg-dark rounded"
         style={{ fontSize: "1rem", fontWeight: "bold" }}
       >
-        <TotalReviews userDetails={props.product.id} />
-      </div>         */}
+        <AverageReviews userDetails={props.product.id} />
+      </div>        
         <div className="card-body">
           {userDetails.length > 0 && (
             <p

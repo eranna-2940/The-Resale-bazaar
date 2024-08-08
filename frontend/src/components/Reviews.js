@@ -264,8 +264,8 @@ const Reviews = ({ userDetails, productdetails }) => {
                       {review.images.map((imageUrl, idx) => (
                         <img
                           key={idx}
-                          src={`${imageUrl}`}
-                          alt={`Review ${index} ${idx}`}
+                            src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${imageUrl}`}
+                            alt={`Review ${index} ${idx}`}
                           className="img-thumbnail"
                           width="70"
                           height="70"
