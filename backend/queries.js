@@ -281,6 +281,8 @@ const addBillingAddress = `INSERT INTO billing_address (firstname, lastname, ema
 const addShippingAddress = `INSERT INTO shipping_address (firstname, lastname, email, country, state, city, address1, address2, pincode, phone, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 const updateShippingAddress = `UPDATE shipping_address SET firstname = ?, lastname = ?, email = ?, country = ?, state = ?, city = ?, address1 = ?, address2 = ?, pincode = ?, phone = ? WHERE id = ?`;
 const deleteShippingAddress = "DELETE FROM shipping_address WHERE id = ?"
+const updateBillingAddress = `UPDATE billing_address SET firstname = ?, lastname = ?, email = ?, country = ?, state = ?, city = ?, address1 = ?, address2 = ?, pincode = ?, phone = ? WHERE id = ?`;
+const deleteBillingAddress = "DELETE FROM billing_address WHERE id = ?"
 const paymentStatusQuery = "INSERT INTO orders (product_id, payment_status, buyer_id, shipment_id, order_id, ordered_date, shipped_date, delivered_date,order_quantity,order_status,order_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
 const deleteProductsQuery = "DELETE FROM  products WHERE id=?";
 const deletecartitemQuery = "DELETE FROM cart WHERE userid = ? AND EXISTS (SELECT 1 FROM orders WHERE buyer_id = ?)"
@@ -371,5 +373,7 @@ module.exports = {
   SavesQuery,
   fetchFindImagesQuery,
   productsUpdateQuery,
-  updateCartItemsQuantityQuery
+  updateCartItemsQuantityQuery,
+  updateBillingAddress,
+  deleteBillingAddress,
 };

@@ -73,7 +73,9 @@ const {
   SavesQuery,
   fetchFindImagesQuery,
   productsUpdateQuery,
-  updateCartItemsQuantityQuery
+  updateCartItemsQuantityQuery,
+  updateBillingAddress,
+  deleteBillingAddress
 } = require("./queries");
 const cors = require("cors");
 const multer = require('multer');
@@ -1311,7 +1313,36 @@ app.post("/saveShippingAddress", (req, res) => {
   });
 });
 
+app.put('/saveBillingAddress/:id', (req, res) => {
+  const id = req.params.id;
+  const { firstname, lastname, email, country, state, city, address1, address2, pincode, phone } = req.body;
 
+  const sql = updateBillingAddress;
+  const values = [firstname, lastname, email, country, state, city, address1, address2, pincode, phone, id];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error('Error updating shipping address:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    console.log('Shipping address updated successfully');
+    return res.status(200).json({ message: 'Shipping address updated successfully' });
+  });
+});
+
+app.delete('/saveBillingAddress/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = deleteBillingAddress;
+
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error('Error deleting shipping address:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    console.log('Shipping address deleted successfully');
+    return res.status(200).json({ message: 'Shipping address deleted successfully' });
+  });
+});
 
 
 app.get("/saveShippingAddress", (req, res) => {
