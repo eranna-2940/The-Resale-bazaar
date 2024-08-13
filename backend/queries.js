@@ -118,6 +118,8 @@ const ordersproducts = `
     refundable_amount INT NULL,
     cancel_reason MEDIUMTEXT NULL,
     cancel_comment LONGTEXT NULL,
+    payment_intent_id VARCHAR(255) NOT NULL,
+    refundstatus TINYINT(4) NULL,
     UNIQUE INDEX id_UNIQUE (id ASC));
 `
 
@@ -283,7 +285,7 @@ const updateShippingAddress = `UPDATE shipping_address SET firstname = ?, lastna
 const deleteShippingAddress = "DELETE FROM shipping_address WHERE id = ?"
 const updateBillingAddress = `UPDATE billing_address SET firstname = ?, lastname = ?, email = ?, country = ?, state = ?, city = ?, address1 = ?, address2 = ?, pincode = ?, phone = ? WHERE id = ?`;
 const deleteBillingAddress = "DELETE FROM billing_address WHERE id = ?"
-const paymentStatusQuery = "INSERT INTO orders (product_id, payment_status, buyer_id, shipment_id, order_id, ordered_date, shipped_date, delivered_date,order_quantity,order_status,order_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
+const paymentStatusQuery = "INSERT INTO orders (product_id, payment_status, buyer_id, shipment_id, order_id, ordered_date, shipped_date, delivered_date,order_quantity,order_status,order_amount,payment_intent_id, refundstatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)";
 const deleteProductsQuery = "DELETE FROM  products WHERE id=?";
 const deletecartitemQuery = "DELETE FROM cart WHERE userid = ? AND EXISTS (SELECT 1 FROM orders WHERE buyer_id = ?)"
 const getbillingAddress= "Select * from billing_address"
@@ -304,6 +306,8 @@ const updateOrderDeliveredandShippementQuery = "UPDATE orders SET shipped_date =
 const fetchFindImagesQuery='SELECT image FROM products WHERE id = ?'
 const productsUpdateQuery=`UPDATE products SET name = ?, price = ?, description = ?, location = ?, color = ?, alteration = ?, size = ?, measurements = ?, \`condition\` = ?, age = ?, quantity = ?, occasion = ?,  material = ?, brand = ?, type = ?, style = ?, fit = ?, length = ?, season = ?, notes = ?, accepted_by_admin= ?, image = ? WHERE id = ?`
 const updateCartItemsQuantityQuery = "UPDATE cart SET quantity = ? WHERE id = ?"
+const cancelorderitemQuery = `UPDATE orders SET order_status = ?, refundable_amount = ?, cancel_reason = ?,cancel_comment = ? WHERE order_id = ?`;
+const RefundDetailsQuery ="SELECT products.*, orders.*, register.* FROM products INNER JOIN orders ON products.id = orders.product_id INNER JOIN register ON orders.buyer_id = register.user_id WHERE orders.order_status = 'cancelled'"
 
 module.exports = {
   createAdminTableQuery,
@@ -376,4 +380,6 @@ module.exports = {
   updateCartItemsQuantityQuery,
   updateBillingAddress,
   deleteBillingAddress,
+  cancelorderitemQuery,
+  RefundDetailsQuery
 };

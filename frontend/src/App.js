@@ -59,6 +59,7 @@ import Scrolltotop from "./components/Scrolltotop";
 import ContactSeller from "./components/sellerdashboard/ContactSeller";
 import ReviewRatings from "./components/customerdetails/reviewsRatings";
 import CancelOrder from "./components/customerdetails/CancelOrder";
+import Refundproducts from "./components/admindashboard/Refundproducts";
 
 
 function App() {
@@ -225,7 +226,10 @@ function App() {
                             </ProtectedRoute>
               
               } />
+                      <Route path="refundsproduct" element={<Refundproducts />}/>
+
         </Routes>
+
       </BrowserRouter>
     </>
   );

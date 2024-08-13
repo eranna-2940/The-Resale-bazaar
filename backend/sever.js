@@ -75,7 +75,9 @@ const {
   productsUpdateQuery,
   updateCartItemsQuantityQuery,
   updateBillingAddress,
-  deleteBillingAddress
+  deleteBillingAddress,
+  cancelorderitemQuery,
+  RefundDetailsQuery
 } = require("./queries");
 const cors = require("cors");
 const multer = require('multer');
@@ -1430,6 +1432,8 @@ app.post("/updatepayment", (req, res) => {
     order_quantity,
     order_status,
     order_amount,
+    payment_intent_id,
+    refundstatus,
     product_id,
     product_name,
     seller_id
@@ -1451,8 +1455,8 @@ app.post("/updatepayment", (req, res) => {
       order_quantity,
       order_status,
       order_amount,
-      product_name,
-      seller_id
+      payment_intent_id,
+      refundstatus,
     ],
     async (err, result) => {
       if (err) {
@@ -1814,6 +1818,24 @@ app.post('/updatePaymentAndQuantities', (req, res) => {
   });
 });
 
+app.put("/updateorders/:id", (req, res) => {
+  const productId = req.params.id;
+  const { order_status, refundable_amount, cancel_reason, cancel_comment } = req.body.data;
+
+  const updateOrderStatusQuery = cancelorderitemQuery;
+
+  db.query(updateOrderStatusQuery, [order_status, refundable_amount, cancel_reason, cancel_comment, productId], (error, results) => {
+    if (error) {
+      console.error("Error updating order status: " + error.message);
+      res.status(500).send("Error updating order status");
+      return;
+    }
+
+    console.log("Order status updated successfully");
+    res.status(200).send("Order status updated successfully");
+  });
+});
+
 // app.post("/updateOrder", (req, res) => {
 //   const { shipment_id, shipped_date, delivered_date } = req.body;
 
@@ -1938,33 +1960,126 @@ app.get("/cancel", (req, res) => {
 // Stripe payment gateway
 app.post("/paymentStripe", async (req, res) => {
   const fromPage = req.body.from;
-  const successRedirect = fromPage
+  const successRedirect = fromPage;
   const product = req.body.product;
+
   try {
+    // Create the Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
       customer_email: req.body.user_mail,
-      line_items: product.map(item => {
-        return {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: item.name,
-            },
-            unit_amount: item.price * 100,
+      line_items: product.map(item => ({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: item.name,
           },
-          quantity: item.quantity,
-        }
-      }),
-      success_url: `${process.env.REACT_APP_HOST}${process.env.REACT_APP_FRONT_END_PORT}/${successRedirect}`,
+          unit_amount: item.price * 100,
+        },
+        quantity: item.quantity,
+      })),
+      payment_intent_data: {
+        metadata: {
+          email: req.body.user_mail,
+        },
+      },
+      success_url: `${process.env.REACT_APP_HOST}${process.env.REACT_APP_FRONT_END_PORT}/${successRedirect}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.REACT_APP_HOST}${process.env.REACT_APP_FRONT_END_PORT}/`,
-    })
-    res.json({ url: session.url })
+    });
+
+    // Return the session URL to the frontend
+    res.json({ url: session.url });
+
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    res.status(500).json({ error: e.message });
   }
-})
+});
+app.get('/api/get-session/:session_id', async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(req.params.session_id);
+    const paymentIntentId = session.payment_intent; // Retrieve PaymentIntent ID
+    res.json({ paymentIntentId });
+  } catch (error) {
+    res.status(500).send('Error retrieving session');
+  }
+});
+
+app.post('/refund', async (req, res) => {
+  const { paymentIntentId,refundStatus } = req.body;
+
+  if (!paymentIntentId) {
+    return res.status(400).json({ success: false, message: 'Payment Intent ID is required.' });
+  }
+
+  try {
+    // Log paymentIntentId for debugging
+    // console.log('Processing refund for Payment Intent ID:', paymentIntentId);
+
+    // Process the refund with Stripe
+    const refund = await stripe.refunds.create({
+      payment_intent: paymentIntentId,
+    });
+
+    if (refund.status === 'succeeded') {
+      db.query("UPDATE orders SET refundstatus = ? where payment_intent_id = ?",[refundStatus,paymentIntentId], (err, data) => {
+        if (err) {
+          return res.json("Error");
+        }
+      return res.json({ success: true, refundStatus: refund.status });
+        
+      })
+    } else {
+      return res.json({ success: false, message: 'Refund processing failed. Please try again later.' });
+    }
+
+  } catch (error) {
+    console.error('Error processing refund:', error.message);
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ success: false, message: 'Invalid Payment Intent ID. Please check and try again.' });
+    }
+    return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
+  }
+});
+
+
+// Endpoint to check the refund status
+app.get('/refund-status/:paymentIntentId', async (req, res) => {
+  const { paymentIntentId } = req.params;
+
+  try {
+    const refunds = await stripe.refunds.list({
+      payment_intent: paymentIntentId,
+    });
+
+    if (refunds.data.length > 0) {
+      const refundStatus = refunds.data[0].status;
+      res.json({ success: true, refundStatus });
+    } else {
+      res.json({ success: false, message: 'No refunds found' });
+    }
+  } catch (error) {
+    console.error('Error fetching refund status:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.get("/refundproducts", (req, res) => {
+  const query = RefundDetailsQuery;
+
+  db.query(query, (err, data) => {
+    if (err) {
+      return res.json("Error");
+    }
+    if (data.length > 0) {
+      return res.json(data);
+    } else {
+      return res.json("Fail");
+    }
+  });
+});
+
+
 app.listen(process.env.REACT_APP_PORT, () => {
   console.log("listening");
 });
