@@ -177,7 +177,7 @@ const Allsellerproducts = () => {
                             <td>
                               <div className="text-center" style={{ width: '100px', height: '100px' }}>
                                 <img
-                                  src={`${JSON.parse(item.image)[0]}`}
+                                  src={`${env.process.REACT_APP_HOST}${env.process.REACT_APP_PORT}/images/${JSON.parse(item.image)[0]}`}
                                   alt="product"
                                   style={{ maxWidth: '100%', height: '100px', objectFit: 'contain' }}
                                 />
