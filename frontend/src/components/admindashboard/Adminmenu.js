@@ -86,6 +86,47 @@ export default function Adminmenu() {
         </div>
       </div>
     </div>
+    <div className="accordion accordion-flush" id="accordionFlushExample2">
+      <div className="accordion-item">
+        <h2 className="accordion-header" id="flush-headingFour">
+          <button
+            className="accordion-button collapsed p-2"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#flush-collapseFour"
+            aria-expanded="false"
+            aria-controls="flush-collapseFour"
+          >
+            <div>
+              <span>
+                {" "}
+                <b><i className="bi bi-book-half"></i> Seller Products</b>
+              </span>
+            </div>
+          </button>
+        </h2>
+        <div
+          id="flush-collapseFour"
+          className="accordion-collapse collapse"
+          aria-labelledby="flush-headingFour"
+          data-bs-parent="#accordionFlushExample2"
+        >
+          <div className="accordion-body p-0">
+            <ul className="list-group">
+              <Link
+                to="/allsellerproducts"
+                className="text-decoration-none text-dark"
+              >
+                <li className="list-group-item">
+                  <i className="bi bi-record-circle"></i> Seller Products
+                </li>
+              </Link>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+    </div>
   </div>
   </div>
   )

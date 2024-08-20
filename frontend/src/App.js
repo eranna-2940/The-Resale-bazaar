@@ -60,6 +60,7 @@ import ContactSeller from "./components/sellerdashboard/ContactSeller";
 import ReviewRatings from "./components/customerdetails/reviewsRatings";
 import CancelOrder from "./components/customerdetails/CancelOrder";
 import Refundproducts from "./components/admindashboard/Refundproducts";
+import Allsellerproducts from "./components/admindashboard/Allsellerproducts";
 
 
 function App() {
@@ -227,6 +228,7 @@ function App() {
               
               } />
                       <Route path="refundsproduct" element={<Refundproducts />}/>
+                      <Route path="allsellerproducts" element={<Allsellerproducts/>}/>
 
         </Routes>
 

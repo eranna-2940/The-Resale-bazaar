@@ -2079,6 +2079,39 @@ app.get("/refundproducts", (req, res) => {
   });
 });
 
+//admin disbaled products 
+app.put('/handleSellerProductsStatus', (req, res) => {
+  const { seller_id, action } = req.body;
+
+  if (!seller_id || !action) {
+    return res.status(400).json({ message: 'Seller ID and action are required.' });
+  }
+
+  if (action !== 'enable' && action !== 'disable') {
+    return res.status(400).json({ message: 'Invalid action. Use "enable" or "disable".' });
+  }
+
+  // Determine the new status based on the action
+  const newStatus = action === 'enable' ? 'enabled' : 'disabled';
+
+  // Update product status in the database
+  db.query(
+    'UPDATE products SET status = ? WHERE seller_id = ?',
+    [newStatus, seller_id],
+    (error, results) => {
+      if (error) {
+        console.error('Error updating product status:', error);
+        return res.status(500).json({ message: 'Server error. Please try again later.' });
+      }
+
+      if (results.affectedRows > 0) {
+        res.status(200).json({ message: `All products for seller ${seller_id} have been ${newStatus}d.` });
+      } else {
+        res.status(404).json({ message: 'No products found for the specified seller.' });
+      }
+    }
+  );
+});
 
 app.listen(process.env.REACT_APP_PORT, () => {
   console.log("listening");
