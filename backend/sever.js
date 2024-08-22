@@ -77,7 +77,11 @@ const {
   updateBillingAddress,
   deleteBillingAddress,
   cancelorderitemQuery,
-  RefundDetailsQuery
+  RefundDetailsQuery,
+  addLikeQuery,
+  removeLikeQuery,
+  LikecountQuery,
+  checkLikeQuery
 } = require("./queries");
 const cors = require("cors");
 const multer = require('multer');
@@ -650,7 +654,7 @@ app.get("/women", (req, res) => {
 });
 
 app.get("/getproducts", (req, res) => {
-  const sql = 'SELECT  * FROM products p INNER JOIN `likes` l ON  p.id = l.product_id'
+  const sql = 'SELECT  * FROM products p INNER JOIN `likes` l ON  p.id = l.like_product_id'
   const accepted = "true";
 
   db.query(sql, [accepted], (err, data) => {
@@ -1558,69 +1562,128 @@ app.get("/updatepayment", (req, res) => {
 //   });
 // });
 
-app.post('/likes', (req, res) => {
-  const { userId, productId } = req.body;
+// app.post('/likes', (req, res) => {
+//   const { userId, productId } = req.body;
 
-  const checkLikeSql = 'SELECT * FROM likes WHERE user_id = ? AND product_id = ?';
-  db.query(checkLikeSql, [userId, productId], (err, results) => {
+//   const checkLikeSql = 'SELECT * FROM likes WHERE user_id = ? AND product_id = ?';
+//   db.query(checkLikeSql, [userId, productId], (err, results) => {
+//     if (err) {
+//       console.error('Error checking like status:', err);
+//       return res.status(500).json({ error: 'Internal server error' });
+//     }
+
+//     if (results.length > 0) {
+//       // User has already liked the product, so remove the like
+//       const deleteLikeSql = 'DELETE FROM likes WHERE user_id = ? AND product_id = ?';
+//       db.query(deleteLikeSql, [userId, productId], (err, result) => {
+//         if (err) {
+//           console.error('Error removing like:', err);
+//           return res.status(500).json({ error: 'Internal server error' });
+//         }
+
+//         console.log('Like removed successfully');
+//         return res.status(200).json({ message: 'Like removed successfully' });
+//       });
+//     } else {
+//       // User has not liked the product, so add the like
+//       const insertLikeSql = 'INSERT INTO likes (user_id, product_id, likes) VALUES (?, ?, ?)';
+//       db.query(insertLikeSql, [userId, productId, 1], (err, result) => {
+//         if (err) {
+//           console.error('Error adding like:', err);
+//           return res.status(500).json({ error: 'Internal server error' });
+//         }
+
+//         console.log('Like added successfully');
+//         return res.status(200).json({ message: 'Like added successfully' });
+//       });
+//     }
+//   });
+// });
+// app.post('/likes/check', (req, res) => {
+//   const { userId, productId } = req.body;
+
+//   const checkLikeSql = 'SELECT * FROM likes WHERE user_id = ? AND product_id = ?';
+//   db.query(checkLikeSql, [userId, productId], (err, results) => {
+//     if (err) {
+//       console.error('Error checking like status:', err);
+//       return res.status(500).json({ error: 'Internal server error' });
+//     }
+
+//     return res.status(200).json({ liked: results.length > 0 });
+//   });
+// });
+
+// app.get('/products/:productId/likes', (req, res) => {
+//   const productId = req.params.productId;
+
+//   const getLikesSql = 'SELECT COUNT(*) AS likeCount FROM likes WHERE product_id = ?';
+//   db.query(getLikesSql, [productId], (err, results) => {
+//     if (err) {
+//       console.error('Error retrieving likes:', err);
+//       return res.status(500).json({ error: 'Internal server error' });
+//     }
+
+//     const likeCount = results[0].likeCount;
+//     return res.status(200).json({ likeCount });
+//   });
+// });
+app.post("/products/:productId/likes", (req, res) => {
+  const { productId } = req.params;
+  const { like_userID, likes, action } = req.body;
+
+  const sql = addLikeQuery;
+  const sql2 = removeLikeQuery;
+
+  if (action === "liked") {
+    // Add the like
+    db.query(
+      sql,
+      [productId, like_userID, likes],
+      (insertErr, insertResults) => {
+        if (insertErr) {
+          console.error("Error adding like:", insertErr);
+          return res.status(500).json({ error: "Server error" });
+        }
+        res.json({ action: "liked", likeCount: likes });
+      }
+    );
+  } else if (action === "unliked") {
+    // Remove the like
+    db.query(sql2, [productId, like_userID], (delErr, delResults) => {
+      if (delErr) {
+        console.error("Error removing like:", delErr);
+        return res.status(500).json({ error: "Server error" });
+      }
+      res.json({ action: "unliked", likeCount: likes });
+    });
+  }
+});
+
+app.get("/products/:productId/likes", (req, res) => {
+  const { productId } = req.params;
+  const sql = LikecountQuery;
+
+  db.query(sql, [productId], (err, result) => {
     if (err) {
-      console.error('Error checking like status:', err);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error("Error fetching like count:", err);
+      return res.status(500).send("Error fetching like count");
     }
-
-    if (results.length > 0) {
-      // User has already liked the product, so remove the like
-      const deleteLikeSql = 'DELETE FROM likes WHERE user_id = ? AND product_id = ?';
-      db.query(deleteLikeSql, [userId, productId], (err, result) => {
-        if (err) {
-          console.error('Error removing like:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-
-        console.log('Like removed successfully');
-        return res.status(200).json({ message: 'Like removed successfully' });
-      });
-    } else {
-      // User has not liked the product, so add the like
-      const insertLikeSql = 'INSERT INTO likes (user_id, product_id, likes) VALUES (?, ?, ?)';
-      db.query(insertLikeSql, [userId, productId, 1], (err, result) => {
-        if (err) {
-          console.error('Error adding like:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-
-        console.log('Like added successfully');
-        return res.status(200).json({ message: 'Like added successfully' });
-      });
-    }
+    const likeCount = result[0].likeCount;
+    res.json({ likeCount });
   });
 });
-app.post('/likes/check', (req, res) => {
-  const { userId, productId } = req.body;
 
-  const checkLikeSql = 'SELECT * FROM likes WHERE user_id = ? AND product_id = ?';
-  db.query(checkLikeSql, [userId, productId], (err, results) => {
+app.get("/products/:productId/likes/user", (req, res) => {
+  const { productId } = req.params;
+  const { userId } = req.query;
+  const sql = checkLikeQuery;
+  db.query(sql, [productId, userId], (err, results) => {
     if (err) {
-      console.error('Error checking like status:', err);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error("Error checking if liked:", err);
+      return res.status(500).send("Error checking like status");
     }
-
-    return res.status(200).json({ liked: results.length > 0 });
-  });
-});
-
-app.get('/products/:productId/likes', (req, res) => {
-  const productId = req.params.productId;
-
-  const getLikesSql = 'SELECT COUNT(*) AS likeCount FROM likes WHERE product_id = ?';
-  db.query(getLikesSql, [productId], (err, results) => {
-    if (err) {
-      console.error('Error retrieving likes:', err);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-
-    const likeCount = results[0].likeCount;
-    return res.status(200).json({ likeCount });
+    const liked = results.length > 0;
+    res.json({ liked });
   });
 });
 

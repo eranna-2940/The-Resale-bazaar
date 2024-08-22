@@ -5,6 +5,7 @@ import MyNavbar from '../navbar';
 import Footer from '../footer';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import TotalReviews from './TotalReviews';
+import Product from "../Product";
 
 const SellerProfile = () => {
   const { sellerId } = useParams();
@@ -99,7 +100,9 @@ const SellerProfile = () => {
     axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/getproducts`)
       .then(res => {
         if (res.data !== "Fail" && res.data !== "Error") {
-          const products = res.data.filter(product => product.user_id.toString() === sellerId);
+          console.log(res.data)
+          const products = res.data.filter(product => product.like_user_id.toString()=== sellerId);
+          console.log(products)
           setLikedProducts(products);
         }
       })
@@ -112,6 +115,7 @@ const SellerProfile = () => {
       .then(res => {
         if (res.data !== "Fail" && res.data !== "Error") {
           const products = res.data.filter(product => product.user_id.toString() === sellerId);
+          console.log(products)
           setSavedProducts(products);
         }
       })
@@ -122,27 +126,16 @@ const SellerProfile = () => {
   const renderProducts = (products) => {
     return (
       <div className="d-flex flex-wrap justify-content-center ms-md-5 me-md-5 mb-4 mt-md-3 mt-3 ms-2 me-2">
-        {products.map(product => (
-          <div className="card productcard" key={product.id}>
-            <Link to={"/product/" + product.id} state={{ productdetails: product }}>
-              <div className="text-center productimgback">
-                <img
-                  src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(product.image)[0]}`}
-                  className="card-img-top"
-                  alt="product"
-                />
+    
+         <div className="product-grid container">
+                {products.length > 0 ? (
+                  products.map((product, index) => (
+                    <Product product={product} key={index} admin="women" />
+                  ))
+                ) : (
+                  <h2 style={{ fontSize: "18px" }}>No products to display</h2>
+                )}
               </div>
-            </Link>
-            <div className="card-body">
-              <p className="card-text text-success">
-                <b>&#36; {product.price}.00</b>
-              </p>
-              {product.size !== "NA" && (
-                <h6 className="card-text" style={{ lineHeight: "8px" }}>{product.size}</h6>
-              )}
-            </div>
-          </div>
-        ))}
       </div>
     );
   };

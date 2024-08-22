@@ -1450,7 +1450,43 @@ export default function Productdetails() {
       setTimeout(() => setNotification(null), 3000);
     }
   };
+  const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      try {
+        const currentSavedToken = sessionStorage.getItem('user-token');
+        const checkSaveUrl = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/saves/check`;
+        const checkResponse = await axios.post(checkSaveUrl, { userId: currentSavedToken, productId: productdetails.id });
+        setSaved(checkResponse.data.saved);
+      } catch (error) {
+        console.error('Error checking save status:', error);
+      }
+    };
+
+    checkSavedStatus();
+  }, [productdetails.id]);
+
+  const handleSave = async (productId, sellerId) => {
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+
+    if (sellerId.toString() === sessionStorage.getItem('user-token')) {
+      alert('You are the owner of this product and cannot save it');
+      return;
+    }
+
+    try {
+      const currentSavedToken = sessionStorage.getItem('user-token');
+      const url = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/saves`;
+      await axios.post(url, { productId, userId: currentSavedToken });
+      setSaved(!saved); // Toggle the saved state
+    } catch (error) {
+      console.error('Error updating save:', error);
+    }
+  };
   return (
     <div className="fullscreen">
       <MyNavbar />
@@ -1485,15 +1521,19 @@ export default function Productdetails() {
         <div className="p-2 ps-lg-5 pe-lg-5 d-lg-flex">
           <div className="p-2 ps-lg-4 pe-lg-4 d-flex flex-column  col-lg-5">
             <div
-              className="ms-auto me-auto text-center productdetailsimgdiv"
+              className="position-relative ms-auto me-auto text-center productdetailsimgdiv"
               ref={productDetailsImgRef}
             >
+
               {/* Initial display of firstImage */}
               <img
                 src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${firstImage}`}
                 alt="product"
                 className="productdetailsimg"
               />
+              <div onClick={()=>handleSave(productdetails.id,productdetails.seller_id) } style={{ fontSize: '24px', color: saved ? 'red': 'grey', cursor: 'pointer' }}>
+   <i className="bi bi-bookmark-fill position-absolute top-0 end-0 m-2" ></i>
+   </div>
             </div>
 
             <div className="ps-5 ps-md-3 ms-md-4 mt-3">

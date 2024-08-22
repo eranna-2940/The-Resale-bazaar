@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS products (
     accepted_by_admin VARCHAR(60) NOT NULL,
     rejection_reason TINYTEXT NULL,
     seller_id INT NOT NULL,
-    likes BIGINT(10) NULL,
+    status ENUM('enabled', 'disabled') DEFAULT 'enabled',
     UNIQUE INDEX id_UNIQUE (id ASC),
     FOREIGN KEY (seller_id) REFERENCES register(user_id)
 );
@@ -240,9 +240,9 @@ CREATE TABLE IF NOT EXISTS review (
 const LikesQuery = `
 CREATE TABLE IF NOT EXISTS likes (
   id SERIAL PRIMARY KEY,
-  likes  INTEGER NOT NULL,
-  user_id INTEGER NOT NULL,
-  product_id INTEGER NOT NULL
+ likes INT NOT NULL,
+  like_user_id INT NOT NULL,
+  like_product_id INT NOT NULL
 );
 ` 
 const SavesQuery = `
@@ -308,7 +308,10 @@ const productsUpdateQuery=`UPDATE products SET name = ?, price = ?, description 
 const updateCartItemsQuantityQuery = "UPDATE cart SET quantity = ? WHERE id = ?"
 const cancelorderitemQuery = `UPDATE orders SET order_status = ?, refundable_amount = ?, cancel_reason = ?,cancel_comment = ? WHERE order_id = ?`;
 const RefundDetailsQuery ="SELECT products.*, orders.*, register.* FROM products INNER JOIN orders ON products.id = orders.product_id INNER JOIN register ON orders.buyer_id = register.user_id WHERE orders.order_status = 'cancelled'"
-
+const addLikeQuery = 'INSERT INTO likes (like_product_id, like_user_id, likes) VALUES (?, ?, ?)';
+const removeLikeQuery = 'DELETE FROM likes WHERE like_product_id = ? AND like_user_id = ?';
+const LikecountQuery = 'SELECT COUNT(*) AS likeCount FROM likes WHERE like_product_id = ?';
+const checkLikeQuery = 'SELECT * FROM likes WHERE like_product_id = ? AND like_user_id = ?';
 module.exports = {
   createAdminTableQuery,
   insertAdminTableQuery,
@@ -381,5 +384,9 @@ module.exports = {
   updateBillingAddress,
   deleteBillingAddress,
   cancelorderitemQuery,
-  RefundDetailsQuery
+  RefundDetailsQuery,
+  addLikeQuery,
+  removeLikeQuery,
+  LikecountQuery,
+  checkLikeQuery
 };
