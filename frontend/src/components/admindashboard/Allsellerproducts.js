@@ -240,7 +240,7 @@ const Allsellerproducts = () => {
   const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const userToken = JSON.parse(sessionStorage.getItem('user-token'));
+  // const userToken = JSON.parse(sessionStorage.getItem('user-token'));
 
   useEffect(() => {
     const fetchSellersAndProducts = async () => {
@@ -248,8 +248,6 @@ const Allsellerproducts = () => {
         const productsResponse = await axios.get(
           `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/sellerproducts`
         );
-        // const products = productsResponse.data.filter((item)=>item.accepted_by_admin === "true");
-
         const products = productsResponse.data;
         const sellerIds = [...new Set(products.map(product => product.seller_id))];
 
@@ -283,7 +281,7 @@ const Allsellerproducts = () => {
     fetchSellersAndProducts();
   }, []);
 
-  const handleEnableDisable = async (action, sellerId) => {
+  const handleEnableDisableAll = async (action, sellerId) => {
     try {
       await axios.put(
         `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/handleSellerProductsStatus`,
@@ -314,6 +312,35 @@ const Allsellerproducts = () => {
     }
   };
 
+  const handleEnableDisableProduct = async (action, productId) => {
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/handleProductStatus`,
+        { product_id: productId, action: action },
+      );
+
+      setNotification({
+        message: `Product has been ${action}d successfully.`,
+        type: 'success',
+      });
+      window.location.reload(false)
+      setTimeout(() => setNotification(null), 3000);
+      const updatedProducts = await axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/sellerproducts?seller_id=${activeSeller}`);
+      setSellerProducts(prevState => ({
+        ...prevState,
+        [activeSeller]: updatedProducts.data,
+      }));
+
+    } catch (error) {
+      setNotification({
+        message: `Failed to ${action} the product. Please try again.`,
+        type: 'error',
+      });
+
+      setTimeout(() => setNotification(null), 3000);
+      console.error("Error enabling/disabling product:", error);
+    }
+  };
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const tableData = sellerProducts[activeSeller]?.slice(startIndex, endIndex) || [];
@@ -353,13 +380,13 @@ const Allsellerproducts = () => {
                     <div className="mb-3">
                       <button
                         className="btn btn-danger me-2"
-                        onClick={() => handleEnableDisable('disable', activeSeller)}
+                        onClick={() => handleEnableDisableAll('disable', activeSeller)}
                       >
                         <i className="bi bi-x-circle-fill me-1"></i> Disable All Products
                       </button>
                       <button
                         className="btn btn-success"
-                        onClick={() => handleEnableDisable('enable', activeSeller)}
+                        onClick={() => handleEnableDisableAll('enable', activeSeller)}
                       >
                         <i className="bi bi-check-circle-fill me-1"></i> Enable All Products
                       </button>
@@ -377,8 +404,10 @@ const Allsellerproducts = () => {
                         <th className="sorting p-3">Product Image</th>
                         <th className="sorting p-3">Product Name</th>
                         <th className="sorting p-3">Seller Name</th>
-                        <th className="sorting p-3">Refund Amount</th>
+                        <th className="sorting p-3">Price</th>
                         <th className="sorting p-3">Status</th>
+                        <th className="sorting p-3">Action</th>
+
                       </tr>
                     </thead>
                     <tbody>
@@ -397,11 +426,12 @@ const Allsellerproducts = () => {
                             </td>
                             <td>{item.name}</td>
                             <td>{`${sellers.find(s => s.user_id === activeSeller)?.firstname} ${sellers.find(s => s.user_id === activeSeller)?.lastname}`}</td>
-                            <td>&#36;{item.refundable_amount}</td>
+                            <td>&#36;{item.price}</td>
+                            <td>{item.status}</td>
                             <td>
                               <button
                                 className={`btn btn-sm ${item.status === 'enabled' ? 'btn-success' : 'btn-danger'}`}
-                                onClick={() => handleEnableDisable(item.status === 'enabled' ? 'disable' : 'enable', activeSeller)}
+                                onClick={() => handleEnableDisableProduct(item.status === 'enabled' ? 'disable' : 'enable', item.id)}
                               >
                                 {item.status === 'enabled' ? 'Enabled' : 'Disabled'}
                               </button>

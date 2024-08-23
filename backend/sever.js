@@ -2175,6 +2175,25 @@ app.put('/handleSellerProductsStatus', (req, res) => {
     }
   );
 });
+app.put('/handleProductStatus', async (req, res) => {
+  const { product_id, action } = req.body;
+
+  if (!['enable', 'disable'].includes(action)) {
+      return res.status(400).json({ message: 'Invalid action' });
+  }
+
+  const status = action === 'enable' ? 'enabled' : 'disabled';
+
+  try {
+      const query = 'UPDATE products SET status = ? WHERE id = ?';
+      await db.query(query, [status, product_id]);
+
+      res.json({ message: `Product has been ${action}d successfully.` });
+  } catch (error) {
+      console.error('Error updating product:', error);
+      res.status(500).json({ message: 'Error updating product' });
+  }
+});
 
 app.listen(process.env.REACT_APP_PORT, () => {
   console.log("listening");
