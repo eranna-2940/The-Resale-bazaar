@@ -131,13 +131,13 @@ const OfferedProduct = (props) => {
         className="card productcard product-card"
         style={{ opacity: props.product.quantity === 0 ? 0.5 : 1 }}
       >
-    {/* <Link
+    <Link
           to={"/offeredproductdetails/" + props.product.product_id}
           state={{
             productdetails: props.product,
             userDetails: userDetails,
           }}
-        > */}
+        >
           <div
             className="text-center productimgback position-relative"
             onMouseEnter={() => handleMouseEnter(props.product.id)}
@@ -161,7 +161,7 @@ const OfferedProduct = (props) => {
                   item.endsWith(".avi") ||
                   item.endsWith(".quicktime") ? (
                     <video
-                      src={item}
+                      src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${item}`}
                       className="d-block w-100"
                       controls
                       muted
@@ -178,7 +178,7 @@ const OfferedProduct = (props) => {
                     </video>
                   ) : (
                     <img
-                      src={item}
+                      src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${item}`}
                       className="d-block w-100"
                       alt={`product-${index}`}
                       style={{ height: "220px", objectFit: "cover" }}
@@ -197,7 +197,7 @@ const OfferedProduct = (props) => {
            
             )}
           </div>
-          {/* </Link> */}
+          </Link>
         <div className="card-body">
           {userDetails.length > 0 && (
             <p

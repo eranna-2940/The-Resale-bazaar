@@ -61,6 +61,7 @@ import ReviewRatings from "./components/customerdetails/reviewsRatings";
 import CancelOrder from "./components/customerdetails/CancelOrder";
 import Refundproducts from "./components/admindashboard/Refundproducts";
 import Allsellerproducts from "./components/admindashboard/Allsellerproducts";
+import Offeredproductdetails from "./components/sellerdashboard/offeredproductdetails";
 
 
 function App() {
@@ -138,6 +139,7 @@ function App() {
             }
           ></Route>
           <Route path="offers" element={<Offers/>}></Route>
+          <Route path="offeredproductdetails/:id" element={<Offeredproductdetails/>}></Route>
           <Route path="aboutus" element={<Aboutus />}></Route>
           <Route path="contactus" element={<Contactus />}></Route>
           <Route

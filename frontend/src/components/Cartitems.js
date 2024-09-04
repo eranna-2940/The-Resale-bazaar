@@ -325,7 +325,7 @@ export default function Cartitems() {
                           <button
                             type="button"
                             className="btn-close w-50"
-                            onClick={() => removeFromCart(product.id)}
+                            onClick={() => removeFromCart(product.id,product)}
                           ></button>
                         </td>
                         <td>

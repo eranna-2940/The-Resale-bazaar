@@ -254,7 +254,7 @@ const Offers = () => {
                             <td>
                                 <div style={{ width: "70px", height: "60px" }}>
                                     <img
-                                        src={JSON.parse(offer.image)[0]}
+                                        src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(offer.image)[0]}`}
                                         alt={offer.name}
                                         style={{ maxWidth: "100%", maxHeight: "100%", backgroundSize: "contain" }}
                                     />

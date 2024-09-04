@@ -250,29 +250,37 @@ export const CartProvider = ({ children }) => {
     }
   };
   
-  const removeFromCart = (productId) => {
-    if(isLoggedIn){
-    axios
-      .delete(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/products/${productId}`)
-      .then((response) => {
-        setCartItems((prevItems) =>
-          prevItems.filter((item) => item.id !== productId)
-        );
-        setNotification({ message:"Product removed from cart!" , type:'success'});
+  const removeFromCart = (productId,product) => {
+    const confirmDeletion = window.confirm("Are you sure you want to remove this item from your cart or back to wishlist?");
+    if (confirmDeletion) {
+      // User clicked "Yes", proceed with removal
+      if (isLoggedIn) {
+        deletefunction(productId)
+      } else {
+        const updated_guest_product = guest_product.filter(item => item.id !== productId);
+        sessionStorage.setItem("guest_products", JSON.stringify(updated_guest_product));
+        setNotification({ message: "Product removed from cart!", type: 'success' });
         setTimeout(() => setNotification(null), 3000);
-      })
-      .catch((error) => {
-        console.error("Error removing product from cart:", error);
-      });
-    }
-    else{
-      const updated_guest_product = guest_product.filter(item => item.id !== productId);
-      sessionStorage.setItem("guest_products", JSON.stringify(updated_guest_product));
-      setNotification({ message:"Product removed from cart!" , type:'success'});
-      setTimeout(() => setNotification(null), 3000);
-      window.location.reload(false);
+        window.location.reload(false);
+      }
+    } else {
+    addToWishlist(product);
+    deletefunction(productId);
     }
   };
+  
+  const deletefunction = (productId)=>{
+    axios
+    .delete(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/products/${productId}`)
+    .then((response) => {
+      setCartItems((prevItems) =>
+        prevItems.filter((item) => item.id !== productId)
+      );
+    })
+    .catch((error) => {
+      console.error("Error removing product from cart:", error);
+    });
+  }
   const updateCartItemQuantity = (productId, newQuantity) => {
   setCartItems(prevItems => {
     return prevItems.map(item =>
