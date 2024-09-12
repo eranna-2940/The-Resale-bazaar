@@ -7,7 +7,7 @@ const OfferModal = () => {
   const [offer, setOffer] = useState('');
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleShow = () => setShow(true)
 
   const handleAmountClick = (amount) => {
     setOffer(`$${amount}`);

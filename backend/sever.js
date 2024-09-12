@@ -237,6 +237,17 @@ const sendPurchaseConfirmationEmail = (email, subject, message) => {
 
   return smtpTransport.sendMail(mailOptions);
 };
+const sendCancellationEmail = (email, subject, message) => {
+  const mailOptions = {
+    from: process.env.REACT_APP_FROMMAIL,
+    to: email,
+    subject: subject,
+    generateTextFromHTML: true,
+    html: message,
+  };
+
+  return smtpTransport.sendMail(mailOptions);
+};
 
 const getUserById = (userId) => {
   return new Promise((resolve, reject) => {
@@ -1881,23 +1892,23 @@ app.post('/updatePaymentAndQuantities', (req, res) => {
   });
 });
 
-app.put("/updateorders/:id", (req, res) => {
-  const productId = req.params.id;
-  const { order_status, refundable_amount, cancel_reason, cancel_comment } = req.body.data;
+// app.put("/updateorders/:id", (req, res) => {
+//   const productId = req.params.id;
+//   const { order_status, refundable_amount, cancel_reason, cancel_comment } = req.body.data;
 
-  const updateOrderStatusQuery = cancelorderitemQuery;
+//   const updateOrderStatusQuery = cancelorderitemQuery;
 
-  db.query(updateOrderStatusQuery, [order_status, refundable_amount, cancel_reason, cancel_comment, productId], (error, results) => {
-    if (error) {
-      console.error("Error updating order status: " + error.message);
-      res.status(500).send("Error updating order status");
-      return;
-    }
+//   db.query(updateOrderStatusQuery, [order_status, refundable_amount, cancel_reason, cancel_comment, productId], (error, results) => {
+//     if (error) {
+//       console.error("Error updating order status: " + error.message);
+//       res.status(500).send("Error updating order status");
+//       return;
+//     }
 
-    console.log("Order status updated successfully");
-    res.status(200).send("Order status updated successfully");
-  });
-});
+//     console.log("Order status updated successfully");
+//     res.status(200).send("Order status updated successfully");
+//   });
+// });
 
 // app.post("/updateOrder", (req, res) => {
 //   const { shipment_id, shipped_date, delivered_date } = req.body;
@@ -1931,6 +1942,48 @@ app.put("/updateorders/:id", (req, res) => {
 
 // payment
 // Replace these with your PayPal Sandbox API credentials
+
+app.put("/updateorders/:id", async (req, res) => {
+  const productId = req.params.id;
+  const { order_status, refundable_amount, cancel_reason, cancel_comment, buyerId } = req.body.data;
+
+  const updateOrderStatusQuery = cancelorderitemQuery;
+
+  // First, update the order status in the database
+  db.query(updateOrderStatusQuery, [order_status, refundable_amount, cancel_reason, cancel_comment, productId], async (error, results) => {
+    if (error) {
+      console.error("Error updating order status: " + error.message);
+      return res.status(500).send("Error updating order status");
+    }
+
+    console.log("Order status updated successfully");
+
+    try {
+      // Fetch the buyer's email using their buyerId
+      const buyer = await getUserById(buyerId);
+      const buyerEmail = buyer.email;
+
+      // Send cancellation email to the buyer
+      const emailSubject = "Order Cancellation Confirmation";
+      const emailMessage = `
+        <p>Dear Customer,</p>
+        <p>Your order has been successfully canceled. The refundable amount of <b>${refundable_amount}</b> will be reflected in your account within 3-5 business days.</p>
+        <p>Cancellation Reason: ${cancel_reason}</p>
+        <p>Cancellation Comments: ${cancel_comment}</p>
+        <p>Thank you for shopping with us.</p>
+      `;
+
+      await sendCancellationEmail(buyerEmail, emailSubject, emailMessage);
+
+      console.log("Cancellation email sent successfully to buyer");
+      res.status(200).send("Order status updated and email sent successfully");
+    } catch (emailError) {
+      console.error("Error sending cancellation email: ", emailError);
+      res.status(500).send("Order status updated but failed to send cancellation email");
+    }
+  });
+});
+
 paypal.configure({
   mode: "sandbox",
   client_id: process.env.REACT_APP_PAYPAL_CLIENTID,
