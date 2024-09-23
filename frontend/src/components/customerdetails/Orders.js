@@ -496,62 +496,80 @@ export default function Orders() {
                       </tr>
                     </thead>
                     <tbody>
-                      {mappedOrders.map((product, index) => (
-                        <tr key={index}>
-                          <td style={{ minWidth: "120px" }}>
-                            {product.order_status === 'cancelled' ? (
-                              <img
-                                src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product.image ? JSON.parse(product.image)[0] : 'defaultImagePath'}`}
-                                alt={product.name}
-                                style={{ maxWidth: "60px", maxHeight: "100px" }}
-                              />
-                            ) : (
-                              <Link
-                                to="/orderpage"
-                                state={{ filteredProducts: product }}
-                                style={{ textDecoration: 'none', color: 'inherit' }}
-                              >
-                                <img
-                                  src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product.image ? JSON.parse(product.image)[0] : 'defaultImagePath'}`}
-                                  alt={product.name}
-                                  style={{ maxWidth: "60px", maxHeight: "100px" }}
-                                />
-                              </Link>
-                            )}
-                          </td>
+                    {mappedOrders.map((product, index) => (
+  <tr key={index}>
+    <td style={{ minWidth: "120px" }}>
+      {product.order_status === 'cancelled' ? (
+        <img
+          src={`${product.image ? JSON.parse(product.image)[0] : 'defaultImagePath'}`}
+          alt={product.name}
+          style={{ maxWidth: "60px", maxHeight: "100px" }}
+        />
+      ) : (
+        <Link
+          to="/orderpage"
+          state={{ filteredProducts: product }}
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          <img
+            src={`${product.image ? JSON.parse(product.image)[0] : 'defaultImagePath'}`}
+            alt={product.name}
+            style={{ maxWidth: "60px", maxHeight: "100px" }}
+          />
+        </Link>
+      )}
+    </td>
 
-                          <td className="text-secondary pt-3" style={{ minWidth: "170px" }}>
-                            {product.name}
-                          </td>
-                          <td className="pt-3" style={{ minWidth: "100px" }}>
-                            &#36; {product.price * product.order_quantity}
-                          </td>
-                          <td className="pt-3" style={{ minWidth: "100px" }}>
-                            {product.order_status === 'cancelled' ? (
-                              <span className="text-danger">Cancelled</span>
-                            ) : product.delivered_date === null ? (
-                              <button
-                                className="btn btn-danger"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation(); // Prevent Link click event
-                                  cancelClick(product);
-                                }}
-                              >
-                                Order Cancel
-                              </button>
-                            ) : (
-                              <Link 
-                                to="/feedback" 
-                                state={{ filteredProducts: product }} 
-                                className="text-decoration-none"
-                              >
-                                <i className="bi bi-star-fill"></i>&nbsp; Rate & Review Product
-                              </Link>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
+    <td className="text-secondary pt-3" style={{ minWidth: "170px" }}>
+      {product.name}
+    </td>
+    
+    <td className="pt-3" style={{ minWidth: "100px" }}>
+      &#36; {product.price * product.order_quantity}
+    </td>
+    
+    <td className="pt-3" style={{ minWidth: "200px" }}>
+      {product.order_status === 'cancelled' ? (
+        <span className="text-danger">Cancelled</span>
+      ) : product.delivered_date === null ? (
+        <button
+          className="btn btn-danger"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent Link click event
+            cancelClick(product);
+          }}
+        >
+          Order Cancel
+        </button>
+      ) : (
+        <>
+          {product.return_status === 'requested' ? (
+            <span className="text-warning">Return Requested</span>
+          ) : (
+            <>
+              <Link 
+                to="/returnorder" 
+                state={{ filteredProducts: product }} 
+                className="btn btn-warning me-2"
+              >
+                Return Order
+              </Link>
+              <Link 
+                to="/feedback" 
+                state={{ filteredProducts: product }} 
+                className="btn btn-outline-secondary"
+              >
+                <i className="bi bi-star-fill"></i>&nbsp; Rate & Review Product
+              </Link>
+            </>
+          )}
+        </>
+      )}
+    </td>
+  </tr>
+))}
+
                     </tbody>
                   </table>
                 ) : (

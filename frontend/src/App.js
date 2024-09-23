@@ -62,6 +62,7 @@ import CancelOrder from "./components/customerdetails/CancelOrder";
 import Refundproducts from "./components/admindashboard/Refundproducts";
 import Allsellerproducts from "./components/admindashboard/Allsellerproducts";
 import Offeredproductdetails from "./components/sellerdashboard/offeredproductdetails";
+import ReturnOrder from "./components/customerdetails/ReturnOder";
 
 
 function App() {
@@ -229,6 +230,13 @@ function App() {
                             </ProtectedRoute>
               
               } />
+              <Route path="/cancelorder" element={
+                              <ProtectedRoute>
+                              {isUserLoggedIn && <ReturnOrder />}
+                            </ProtectedRoute>
+              
+              } />
+
                       <Route path="refundsproduct" element={<Refundproducts />}/>
                       <Route path="allsellerproducts" element={<Allsellerproducts/>}/>
 

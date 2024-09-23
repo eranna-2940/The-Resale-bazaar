@@ -2248,6 +2248,39 @@ app.put('/handleProductStatus', async (req, res) => {
   }
 });
 
+app.put("/returnorders/:id", (req, res) => {
+  const orderId = req.params.id;
+  const { return_status, return_reason, return_comment, return_refundable_amount, return_date } = req.body.data;
+
+  // SQL query to update return details
+  const updateReturnDetailsQuery = `
+    UPDATE orders
+    SET
+      return_status = ?,
+      return_reason = ?,
+      return_comment = ?,
+      return_refundable_amount = ?,
+      return_date = ?
+    WHERE order_id = ?`;
+
+  // Execute the update query
+  db.query(updateReturnDetailsQuery, [return_status, return_reason, return_comment, return_refundable_amount, return_date, orderId], (error, results) => {
+    if (error) {
+      console.error("Error updating return details: " + error.message);
+      res.status(500).send("Error updating return details");
+      return;
+    }
+
+    // Check if any rows were affected
+    if (results.affectedRows === 0) {
+      return res.status(404).send("No order found with the given ID");
+    }
+
+    console.log("Return details updated successfully");
+    res.status(200).send("Return details updated successfully");
+  });
+});
+
 app.listen(process.env.REACT_APP_PORT, () => {
   console.log("listening");
 });
