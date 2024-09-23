@@ -81,7 +81,8 @@ const {
   addLikeQuery,
   removeLikeQuery,
   LikecountQuery,
-  checkLikeQuery
+  checkLikeQuery,
+  ReturnDetailsQuery
 } = require("./queries");
 const cors = require("cors");
 const multer = require('multer');
@@ -2182,6 +2183,20 @@ app.get('/refund-status/:paymentIntentId', async (req, res) => {
 
 app.get("/refundproducts", (req, res) => {
   const query = RefundDetailsQuery;
+
+  db.query(query, (err, data) => {
+    if (err) {
+      return res.json("Error");
+    }
+    if (data.length > 0) {
+      return res.json(data);
+    } else {
+      return res.json("Fail");
+    }
+  });
+});
+app.get("/returnproducts", (req, res) => {
+  const query = ReturnDetailsQuery;
 
   db.query(query, (err, data) => {
     if (err) {
