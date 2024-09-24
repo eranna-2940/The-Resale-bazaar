@@ -308,7 +308,7 @@ const productsUpdateQuery=`UPDATE products SET name = ?, price = ?, description 
 const updateCartItemsQuantityQuery = "UPDATE cart SET quantity = ? WHERE id = ?"
 const cancelorderitemQuery = `UPDATE orders SET order_status = ?, refundable_amount = ?, cancel_reason = ?,cancel_comment = ? WHERE order_id = ?`;
 const RefundDetailsQuery ="SELECT products.*, orders.*, register.* FROM products INNER JOIN orders ON products.id = orders.product_id INNER JOIN register ON orders.buyer_id = register.user_id WHERE orders.order_status = 'cancelled'"
-const ReturnDetailsQuery ="SELECT products.*, orders.*, register.* FROM products INNER JOIN orders ON products.id = orders.product_id INNER JOIN register ON orders.buyer_id = register.user_id WHERE orders.return_status = 'requested'"
+const ReturnDetailsQuery = "SELECT products.*, orders.*, register.* FROM products INNER JOIN orders ON products.id = orders.product_id INNER JOIN register ON orders.buyer_id = register.user_id WHERE orders.return_status IN ('requested', 'approved')";
 const addLikeQuery = 'INSERT INTO likes (like_product_id, like_user_id, likes) VALUES (?, ?, ?)';
 const removeLikeQuery = 'DELETE FROM likes WHERE like_product_id = ? AND like_user_id = ?';
 const LikecountQuery = 'SELECT COUNT(*) AS likeCount FROM likes WHERE like_product_id = ?';

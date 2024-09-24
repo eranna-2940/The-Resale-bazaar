@@ -81,6 +81,14 @@ export default function Adminmenu() {
                   <i className="bi bi-record-circle"></i> Refund Products
                 </li>
               </Link>
+              <Link
+                to="/sellerreturnproducts"
+                className="text-decoration-none text-dark"
+              >
+                <li className="list-group-item">
+                  <i className="bi bi-record-circle"></i>  Seller Return Products
+                </li>
+              </Link>
             </ul>
           </div>
         </div>

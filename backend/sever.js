@@ -2195,6 +2195,44 @@ app.get("/refundproducts", (req, res) => {
     }
   });
 });
+
+
+app.post('/return', async (req, res) => {
+  const { paymentIntentId,return_status } = req.body;
+
+  if (!paymentIntentId) {
+    return res.status(400).json({ success: false, message: 'Payment Intent ID is required.' });
+  }
+
+  try {
+    // Log paymentIntentId for debugging
+    // console.log('Processing refund for Payment Intent ID:', paymentIntentId);
+
+    // Process the refund with Stripe
+    const refund = await stripe.refunds.create({
+      payment_intent: paymentIntentId,
+    });
+
+    if (refund.status === 'succeeded') {
+      db.query("UPDATE orders SET return_status = ? where payment_intent_id = ?",[return_status,paymentIntentId], (err, data) => {
+        if (err) {
+          return res.json("Error");
+        }
+      return res.json({ success: true, return_status: refund.status });
+        
+      })
+    } else {
+      return res.json({ success: false, message: 'Refund processing failed. Please try again later.' });
+    }
+
+  } catch (error) {
+    console.error('Error processing refund:', error.message);
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ success: false, message: 'Invalid Payment Intent ID. Please check and try again.' });
+    }
+    return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
+  }
+});
 app.get("/returnproducts", (req, res) => {
   const query = ReturnDetailsQuery;
 

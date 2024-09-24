@@ -428,7 +428,8 @@ export default function Orders() {
       delivered_date: order.delivered_date,
       buyer_id: order.buyer_id,
       order_quantity: order.order_quantity,
-      order_status: order.order_status
+      order_status: order.order_status,
+      return_status:order.return_status
     };
   });
 
@@ -499,7 +500,7 @@ export default function Orders() {
                     {mappedOrders.map((product, index) => (
   <tr key={index}>
     <td style={{ minWidth: "120px" }}>
-      {product.order_status === 'cancelled' ? (
+      {product.order_status === 'cancelled' || product.return_status === 'requested' ? (
         <img
           src={`${product.image ? JSON.parse(product.image)[0] : 'defaultImagePath'}`}
           alt={product.name}
