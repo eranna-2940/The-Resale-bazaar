@@ -2303,7 +2303,7 @@ app.put('/handleProductStatus', async (req, res) => {
 
 app.put("/returnorders/:id", (req, res) => {
   const orderId = req.params.id;
-  const { return_status, return_reason, return_comment, return_refundable_amount, return_date } = req.body.data;
+  const { customer_info, return_type, return_method,return_status, return_reason, return_comment, return_refundable_amount,product, return_date } = req.body.data;
 
   // SQL query to update return details
   const updateReturnDetailsQuery = `
@@ -2317,6 +2317,36 @@ app.put("/returnorders/:id", (req, res) => {
     WHERE order_id = ?`;
 
   // Execute the update query
+  const mailOptions = {
+    from: process.env.REACT_APP_FROMMAIL, // Your company email (same as the one sending the email)
+    to:  process.env.REACT_APP_FROMMAIL, // The same company email (returns department)
+    subject: `Return Request for Order #${orderId}`,
+    text: `
+      Customer Info:
+      Name: ${customer_info.name}
+      Email: ${customer_info.email}
+      Phone: ${customer_info.phone}
+
+      Return Details:
+      Order ID: ${orderId}
+      Product: ${product.name}
+      Quantity: ${product.order_quantity}
+      Return Reason: ${return_reason}
+      Return Type: ${return_type}
+      Return Method: ${return_method}
+      Please process this return request accordingly.
+    `,
+  };
+
+  // Send email
+  smtpTransport.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('Error sending email:', error);
+      return res.status(500).send('Error sending email');
+    }
+    console.log('Email sent:', info.response);
+    res.status(200).send('Return request submitted successfully');
+  });
   db.query(updateReturnDetailsQuery, [return_status, return_reason, return_comment, return_refundable_amount, return_date, orderId], (error, results) => {
     if (error) {
       console.error("Error updating return details: " + error.message);
