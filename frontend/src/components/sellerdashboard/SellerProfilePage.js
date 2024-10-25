@@ -72,6 +72,7 @@ const SellerProfile = () => {
               email: user.email,
               phone: user.phone,
               name: `${user.firstname} ${user.lastname}`,
+              image:user.image
             });
           }
         }
@@ -149,7 +150,16 @@ const SellerProfile = () => {
             <div className="seller-profile-header border">
               <div className='m-5'>
                 <h2 className="seller-name fs-1">
-                <i className="bi bi-person-circle fs-1"></i>&nbsp;{sellerDetails.shopname==null||undefined||''?sellerDetails.name:sellerDetails.shopname}
+                {sellerDetails.image && JSON.parse(sellerDetails.image).length > 0 ? (
+    <img
+      src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(sellerDetails.image)[0]}`}
+      alt="sellerproduct"
+      className="rounded-circle me-2"
+      style={{ width: '120px', height: '120px', objectFit: 'cover' }}
+    />
+  ) : (
+    <i className="bi bi-person-circle fs-1 me-2"></i> 
+  )}&nbsp;{sellerDetails.shopname==null||undefined||''?sellerDetails.name:sellerDetails.shopname}
                 </h2>
                 <p className='ms-5'><TotalReviews userDetails={userdetails} /></p> 
 

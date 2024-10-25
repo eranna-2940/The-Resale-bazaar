@@ -508,18 +508,37 @@ app.post("/register", (req, res) => {
   });
 });
 
-app.post("/updateuser", (req, res) => {
-  const email = req.body.email;
-  const newData = req.body;
-  const sql = updateUserQuery;
+// app.post("/updateuser", (req, res) => {
+//   const email = req.body.email;
+//   const newData = req.body;
+//   const sql = updateUserQuery;
 
-  db.query(sql, [newData, email], (err, data) => {
+//   db.query(sql, [newData, email], (err, data) => {
+//     if (err) {
+//       console.log(err);
+//       return res.json(err);
+//     }
+//     console.log("Data updated successfully");
+//     return res.json(data);
+//   });
+// });
+app.post('/updateuser', upload.array('images', 5), (req, res) => { // Allow multiple images
+  const { firstname, lastname, email, phone } = req.body;
+  const images = req.files.map(file => file.filename); // Extract filenames from uploaded files
+  
+  const query = `
+    UPDATE register 
+    SET firstname = ?, lastname = ?, email = ?, phone = ?, image = ?
+    WHERE email = ?;  
+  `;
+
+  db.query(query, [firstname, lastname, email, phone, JSON.stringify(images), email], (err, result) => { 
     if (err) {
-      console.log(err);
-      return res.json(err);
+      console.error('Error updating user profile:', err);
+      res.status(500).send({ message: 'Error updating profile' });
+      return;
     }
-    console.log("Data updated successfully");
-    return res.json(data);
+    res.send({ message: 'Profile updated successfully' });
   });
 });
 

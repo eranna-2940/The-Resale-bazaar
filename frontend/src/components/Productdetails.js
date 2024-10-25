@@ -266,7 +266,7 @@
 //     console.log(sellerId);
 //     // Navigate to seller profile page with sellerId as a parameter
 //     navigates(`/sellerprofile/${sellerId}` ,{ state: { userdetails } });  };
- 
+
 //   useEffect(() => {
 //     const fetchLikeCount = async () => {
 //       try {
@@ -276,10 +276,10 @@
 //         console.error('Error fetching like count:', error);
 //       }
 //     };
-  
+
 //     fetchLikeCount();
 //   }, [productdetails.id]);
-  
+
 //   const [liked, setLiked] = useState(productdetails.likes);
 //   const [likeCount, setLikeCount] = useState(productdetails.likes);
 //   // const toggleLike = async (productId, sellerId) => {
@@ -287,75 +287,75 @@
 //   //     navigate('/login');
 //   //     return;
 //   //   }
-  
+
 //   //   if (sellerId.toString() === sessionStorage.getItem('user-token')) {
 //   //     alert('You cannot like/dislike your own product.');
 //   //     return;
 //   //   }
-  
+
 //   //   try {
 //   //     const currentUserToken = sessionStorage.getItem('user-token');
 //   //     const checkLikeUrl = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/likes/check`;
 //   //     const checkResponse = await axios.post(checkLikeUrl, { userId: currentUserToken, productId });
-  
+
 //   //     let newLikeCount;
 //   //     let liked = checkResponse.data.liked;
-  
+
 //   //     if (liked) {
 //   //       newLikeCount = likeCount - 1;
 //   //     } else {
 //   //       newLikeCount = likeCount + 1;
 //   //     }
-  
+
 //   //     const url = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/likes`;
-  
+
 //   //     await axios.post(url, {
 //   //       productId: productId,
 //   //       userId: currentUserToken
 //   //     });
-  
+
 //   //     setLiked(!liked);
 //   //     setLikeCount(newLikeCount);
 //   //   } catch (error) {
 //   //     console.error('Error updating like count:', error);
 //   //   }
 //   // };
-  
+
 //   const toggleLike = async (productId, sellerId) => {
 //     if (!isLoggedIn) {
 //       navigate('/login');
 //       return;
 //     }
-  
+
 //     if (sellerId.toString() === sessionStorage.getItem('user-token')) {
 //       alert('You cannot like/dislike your own product.');
 //       return;
 //     }
-  
+
 //     try {
 //       const currentUserToken = sessionStorage.getItem('user-token');
 //       const checkLikeUrl = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/likes/check`;
 //       const checkResponse = await axios.post(checkLikeUrl, { userId: currentUserToken, productId });
-  
+
 //       let newLikeCount;
 //       let liked = checkResponse.data.liked;
-  
+
 //       if (liked) {
 //         newLikeCount = likeCount - 1;
 //       } else {
 //         newLikeCount = likeCount + 1;
 //       }
-  
+
 //       const url = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/likes`;
-  
+
 //       await axios.post(url, {
 //         productId: productId,
 //         userId: currentUserToken
 //       });
-  
+
 //       setLiked(!liked);
 //       setLikeCount(newLikeCount);
-  
+
 //       if (!liked) {
 //         const redirectToFacebook = window.confirm('Would you like to post in Facebook');
 //         if (redirectToFacebook) {
@@ -363,7 +363,7 @@
 //           return;
 //         }
 //       }
-  
+
 //     } catch (error) {
 //       console.error('Error updating like count:', error);
 //     }
@@ -398,7 +398,7 @@
 //   //      }
 
 //   //      const url = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/saves`;
-          
+
 //   //      await axios.post(url,{
 //   //       productId:productId,
 //   //       userId:currentSavedToken
@@ -1004,7 +1004,6 @@
 //                             </div>
 //                           </div>
 
-
 //                         </div>
 //                       )}
 
@@ -1055,7 +1054,7 @@
 //                     >
 //                       Visit Shop
 //                     </button>
-                    
+
 //                   </div>
 //                    <p className="ms-3"><TotalReviews  userDetails={userdetails}/></p>
 //                 </>
@@ -1086,7 +1085,7 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Reviews from "./Reviews";
 import Scrolltotopbtn from "./Scrolltotopbutton";
-import Notification from "./Notification"; 
+import Notification from "./Notification";
 import TotalReviews from "./sellerdashboard/TotalReviews";
 
 const responsive = {
@@ -1351,6 +1350,7 @@ export default function Productdetails() {
             phone: item.phone,
             name: item.firstname + " " + item.lastname,
             shopname: item.shopname,
+            image: item.image,
           }));
           setUserDetails(userDetails);
         }
@@ -1455,12 +1455,15 @@ export default function Productdetails() {
   useEffect(() => {
     const checkSavedStatus = async () => {
       try {
-        const currentSavedToken = sessionStorage.getItem('user-token');
+        const currentSavedToken = sessionStorage.getItem("user-token");
         const checkSaveUrl = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/saves/check`;
-        const checkResponse = await axios.post(checkSaveUrl, { userId: currentSavedToken, productId: productdetails.id });
+        const checkResponse = await axios.post(checkSaveUrl, {
+          userId: currentSavedToken,
+          productId: productdetails.id,
+        });
         setSaved(checkResponse.data.saved);
       } catch (error) {
-        console.error('Error checking save status:', error);
+        console.error("Error checking save status:", error);
       }
     };
 
@@ -1469,22 +1472,22 @@ export default function Productdetails() {
 
   const handleSave = async (productId, sellerId) => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
-    if (sellerId.toString() === sessionStorage.getItem('user-token')) {
-      alert('You are the owner of this product and cannot save it');
+    if (sellerId.toString() === sessionStorage.getItem("user-token")) {
+      alert("You are the owner of this product and cannot save it");
       return;
     }
 
     try {
-      const currentSavedToken = sessionStorage.getItem('user-token');
+      const currentSavedToken = sessionStorage.getItem("user-token");
       const url = `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/saves`;
       await axios.post(url, { productId, userId: currentSavedToken });
       setSaved(!saved); // Toggle the saved state
     } catch (error) {
-      console.error('Error updating save:', error);
+      console.error("Error updating save:", error);
     }
   };
   return (
@@ -1524,16 +1527,24 @@ export default function Productdetails() {
               className="position-relative ms-auto me-auto text-center productdetailsimgdiv"
               ref={productDetailsImgRef}
             >
-
               {/* Initial display of firstImage */}
               <img
                 src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${firstImage}`}
                 alt="product"
                 className="productdetailsimg"
               />
-              <div onClick={()=>handleSave(productdetails.id,productdetails.seller_id) } style={{ fontSize: '24px', color: saved ? 'red': 'grey', cursor: 'pointer' }}>
-   <i className="bi bi-bookmark-fill position-absolute top-0 end-0 m-2" ></i>
-   </div>
+              <div
+                onClick={() =>
+                  handleSave(productdetails.id, productdetails.seller_id)
+                }
+                style={{
+                  fontSize: "24px",
+                  color: saved ? "red" : "grey",
+                  cursor: "pointer",
+                }}
+              >
+                <i className="bi bi-bookmark-fill position-absolute top-0 end-0 m-2"></i>
+              </div>
             </div>
 
             <div className="ps-5 ps-md-3 ms-md-4 mt-3">
@@ -1548,83 +1559,86 @@ export default function Productdetails() {
             </div>
 
             <div className="ms-auto me-auto">
-      <Carousel
-        responsive={responsive}
-        className="mt-2 productdetailscarousel"
-        ref={carouselRef}
-        beforeChange={(nextSlide) => setCurrentSlide(nextSlide)}
-      >
-        {datta.map((product, index) => (
-          <div
-            className="card m-3"
-            key={index}
-            id={`subimage-${index}`}
-            onClick={() => updateProductDetailsImg(product, index)}
-            style={{
-              border:
-                currentSlide === index
-                  ? '3px solid green'
-                  : '1px solid grey',
-              position: 'relative',
-            }}
-          >
-            {['mp4', 'webm', 'avi', 'mov', 'quicktime'].includes(
-              product.split('.').pop().toLowerCase()
-            ) ? (
-              <div
-                style={{
-                  position: 'relative',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  height: '110px',
-                }}
+              <Carousel
+                responsive={responsive}
+                className="mt-2 productdetailscarousel"
+                ref={carouselRef}
+                beforeChange={(nextSlide) => setCurrentSlide(nextSlide)}
               >
-                <video
-                  style={{
-                    cursor: 'pointer',
-                    maxWidth: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    alignSelf: 'center',
-                    padding: '3px',
-                  }}
-                  controls
-                >
-                  <source
-                    src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}`}
-                    type={`video/${product.split('.').pop().toLowerCase()}`}
-                  />
-                  Your browser does not support the video tag.
-                </video>
-                <i
-                  className="bi bi-play-btn-fill"
-                  style={{
-                    position: 'absolute',
-                    fontSize: '2rem',
-                    color: 'white',
-                    pointerEvents: 'none',
-                  }}
-                ></i>
-              </div>
-            ) : (
-              <img
-                src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}`}
-                alt="Product"
-                style={{
-                  cursor: 'pointer',
-                  maxWidth: '100%',
-                  height: '110px',
-                  objectFit: 'contain',
-                  alignSelf: 'center',
-                  padding: '3px',
-                }}
-              />
-            )}
-          </div>
-        ))}
-      </Carousel>
-    </div>
+                {datta.map((product, index) => (
+                  <div
+                    className="card m-3"
+                    key={index}
+                    id={`subimage-${index}`}
+                    onClick={() => updateProductDetailsImg(product, index)}
+                    style={{
+                      border:
+                        currentSlide === index
+                          ? "3px solid green"
+                          : "1px solid grey",
+                      position: "relative",
+                    }}
+                  >
+                    {["mp4", "webm", "avi", "mov", "quicktime"].includes(
+                      product.split(".").pop().toLowerCase()
+                    ) ? (
+                      <div
+                        style={{
+                          position: "relative",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "110px",
+                        }}
+                      >
+                        <video
+                          style={{
+                            cursor: "pointer",
+                            maxWidth: "100%",
+                            height: "100%",
+                            objectFit: "contain",
+                            alignSelf: "center",
+                            padding: "3px",
+                          }}
+                          controls
+                        >
+                          <source
+                            src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}`}
+                            type={`video/${product
+                              .split(".")
+                              .pop()
+                              .toLowerCase()}`}
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                        <i
+                          className="bi bi-play-btn-fill"
+                          style={{
+                            position: "absolute",
+                            fontSize: "2rem",
+                            color: "white",
+                            pointerEvents: "none",
+                          }}
+                        ></i>
+                      </div>
+                    ) : (
+                      <img
+                        src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${product}`}
+                        alt="Product"
+                        style={{
+                          cursor: "pointer",
+                          maxWidth: "100%",
+                          height: "110px",
+                          objectFit: "contain",
+                          alignSelf: "center",
+                          padding: "3px",
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </Carousel>
+            </div>
           </div>
           <div className="ps-md-3 p-2 col-lg-7 detailsdiv">
             <h1 className="text-secondary fs-2">{productdetails.name}</h1>
@@ -2132,30 +2146,40 @@ export default function Productdetails() {
               <div className="user-details border shadow-sm p-3 bg-body rounded">
                 {userdetails.map((user, index) => (
                   <>
-                  <div
-                    className="d-flex justify-content-between m-2"
-                    key={index}
-                  >
-                    <p>
-                      <i className="bi bi-person-circle fs-5"></i>
-                      &nbsp;
-                      {user.shopname === "" || user.shopname === null || user.shopname === undefined
-                        ? user.name
-                        : user.shopname}
-                    </p>
-
-                    <button
-                      className="btn btn-outline-primary"
-                      onClick={() => handleViewProfile(user.userId)}
+                    <div
+                      className="d-flex justify-content-between m-2"
+                      key={index}
                     >
-                      Visit Shop
-                    </button>
+                     <p>
+  {/* Display image if it exists, otherwise show the icon */}
+  {user.image && JSON.parse(user.image).length > 0 ? (
+    <img
+      src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(user.image)[0]}`}
+      alt="sellerproduct"
+      className="rounded-circle me-2"
+      style={{ width: '30px', height: '30px', objectFit: 'cover' }}
+    />
+  ) : (
+    <i className="bi bi-person-circle fs-5 me-2"></i> 
+  )}
+  &nbsp;
+  {user.shopname === "" || user.shopname === null || user.shopname === undefined
+    ? user.name
+    : user.shopname}
+</p>
 
-                  </div>
-                  <p className="ms-2"><TotalReviews  userDetails={userdetails}/></p>
-</>
+                      <button
+                        className="btn btn-outline-primary"
+                        onClick={() => handleViewProfile(user.userId)}
+                      >
+                        Visit Shop
+                      </button>
+                    </div>
+                    <p className="ms-2">
+                      <TotalReviews userDetails={userdetails} />
+                    </p>
+                  </>
                 ))}
-
               </div>
               {productdetails.notes !== null && (
                 <div className="p-2">
