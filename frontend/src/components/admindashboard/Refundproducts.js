@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import Adminfooter from './Adminfooter';
-import Adminmenu from './Adminmenu';
-import Adminnavbar from './Adminnavbar';
-import axios from 'axios';
-import Adminpagination from './Adminpagination';
-import Notification from "../Notification"
-
+import React, { useEffect, useState } from "react";
+import Adminfooter from "./Adminfooter";
+import Adminmenu from "./Adminmenu";
+import Adminnavbar from "./Adminnavbar";
+import axios from "axios";
+import Adminpagination from "./Adminpagination";
+import Notification from "../Notification";
 
 const Refundproducts = () => {
   const [refundproducts, setRefundProducts] = useState([]);
@@ -15,12 +14,14 @@ const Refundproducts = () => {
   const [viewRowIndex, setViewRowIndex] = useState(null);
   const [notification, setNotification] = useState(null);
 
-
   useEffect(() => {
     axios
-      .get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/refundproducts`)
+      .get(
+        `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/refundproducts`
+      )
       .then((res) => {
-        if (res.data !== 'Fail' && res.data !== 'Error') {
+        if (res.data !== "Fail" && res.data !== "Error") {
+          console.log(res.data);
           setRefundProducts(res.data);
         }
       })
@@ -37,26 +38,25 @@ const Refundproducts = () => {
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const tableData = refundproducts.slice(startIndex, endIndex);
-
   const checkRefundStatus = async (paymentIntentId) => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/refund-status/${paymentIntentId}`);
+      const response = await axios.get(
+        `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/refund-status/${paymentIntentId}`
+      );
       if (response.data.success) {
         return response.data.refundStatus;
       } else {
-        console.error('Refund status check failed:', response.data.message);
+        console.error("Refund status check failed:", response.data.message);
         return null;
       }
     } catch (error) {
-      console.error('Error checking refund status:', error);
+      console.error("Error checking refund status:", error);
       return null;
     }
   };
 
   const handleRefund = async (productId, paymentIntentId) => {
-   console.log(paymentIntentId)
     try {
-  
       if (!paymentIntentId) {
         setNotification({
           message: "Refund payment intent ID is missing.",
@@ -64,23 +64,26 @@ const Refundproducts = () => {
         });
         return;
       }
-  
+
       // Check the current refund status (assuming checkRefundStatus is defined elsewhere)
       const currentStatus = await checkRefundStatus(paymentIntentId);
-      if (currentStatus === 'succeeded' || currentStatus === 'canceled') {
+      if (currentStatus === "succeeded" || currentStatus === "canceled") {
         setNotification({
-          message: "Refund already processed or canceled.",
+          message: "Refund already processed or cancelled.",
           type: "error",
         });
         return;
       }
-  
-      const response = await axios.post(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/refund`, {
-        productId: productId,
-        paymentIntentId: paymentIntentId,
-        refundStatus:true,
-      });
-  
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/refund`,
+        {
+          productId: productId,
+          paymentIntentId: paymentIntentId,
+          refundStatus: true,
+        }
+      );
+
       if (response.data.success) {
         setNotification({
           message: "Refund processed successfully!",
@@ -95,15 +98,15 @@ const Refundproducts = () => {
         //   )
         // );
       } else {
-        alert('Refund failed: ' + response.data.message);
+        alert("Refund failed: " + response.data.message);
       }
     } catch (error) {
-      console.error('Error processing refund:', error);
-      alert('An error occurred while processing the refund. Please try again later.');
+      console.error("Error processing refund:", error);
+      alert(
+        "An error occurred while processing the refund. Please try again later."
+      );
     }
   };
-  
-  
 
   return (
     <div className="fullscreen">
@@ -133,47 +136,84 @@ const Refundproducts = () => {
                     <thead className="">
                       <tr role="row">
                         <th className="p-3">Product Id</th>
-                        <th className="sorting p-3" tabIndex="0" aria-controls="dynamic-table">
+                        <th
+                          className="sorting p-3"
+                          tabIndex="0"
+                          aria-controls="dynamic-table"
+                        >
                           Product Image
                         </th>
-                        <th className="sorting p-3" tabIndex="0" aria-controls="dynamic-table">
+                        <th
+                          className="sorting p-3"
+                          tabIndex="0"
+                          aria-controls="dynamic-table"
+                        >
                           Product Name
                         </th>
-                        <th className="hidden-480 sorting p-3" tabIndex="0" aria-controls="dynamic-table">
+                        <th
+                          className="hidden-480 sorting p-3"
+                          tabIndex="0"
+                          aria-controls="dynamic-table"
+                        >
                           Buyer Name
                         </th>
-                        <th className="hidden-480 sorting p-3" tabIndex="0" aria-controls="dynamic-table">
+                        <th
+                          className="hidden-480 sorting p-3"
+                          tabIndex="0"
+                          aria-controls="dynamic-table"
+                        >
                           Refund Amount
                         </th>
-                        <th className="hidden-480 sorting p-3" rowSpan="1" colSpan="1">
+                        <th
+                          className="hidden-480 sorting p-3"
+                          rowSpan="1"
+                          colSpan="1"
+                        >
                           Action
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {tableData.length > 0 ? (
+                      {tableData && tableData.length > 0 ? (
                         tableData.map((item, index) => (
                           <tr key={index}>
                             <td>{item.id}</td>
                             <td>
-                              <div className="text-center" style={{ width: '100px', height: '100px' }}>
-                                <img
-                                  src={`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/images/${JSON.parse(item.image)[0]}`}
-                                  alt="product"
-                                  style={{ maxWidth: '100%', height: '100px', objectFit: 'contain' }}
-                                />
+                              <div
+                                className="text-center"
+                                style={{ width: "100px", height: "100px" }}
+                              >
+                                {item.image ? (
+                                  <img
+                                    src={`${process.env.REACT_APP_HOST}${
+                                      process.env.REACT_APP_PORT
+                                    }/images/${JSON.parse(item.image)[0]}`}
+                                    alt="product"
+                                    style={{
+                                      maxWidth: "100%",
+                                      height: "100px",
+                                      objectFit: "contain",
+                                    }}
+                                  />
+                                ) : (
+                                  <div>No Image Available</div> // Fallback when no image is available
+                                )}
                               </div>
                             </td>
                             <td>{item.name}</td>
-                            <td>{item.firstname + ' ' + item.lastname}</td>
+                            <td>{item.firstname + " " + item.lastname}</td>
                             <td>&#36;{item.refundable_amount}</td>
                             <td>
                               <button
                                 className="btn btn-danger"
-                                onClick={() => handleRefund(item.id, item.payment_intent_id)}
+                                onClick={() =>
+                                  handleRefund(item.id, item.payment_intent_id)
+                                }
                                 disabled={Boolean(item.refundstatus) === true}
                               >
-                                {Boolean(item.refundstatus) === true ? 'Refunded' : 'Refund'}
+                                {Boolean(item.refundstatus) === true
+                                  ? "Refunded"
+                                  : "Refund"}
                               </button>
                             </td>
                           </tr>
@@ -190,7 +230,7 @@ const Refundproducts = () => {
                 </div>
 
                 <Adminpagination
-                  stateData={refundproducts}
+                  stateData={tableData}
                   pageSize={pageSize}
                   setPageSize={setPageSize}
                   setViewRowIndex={setViewRowIndex}

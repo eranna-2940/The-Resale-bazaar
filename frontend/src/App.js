@@ -64,6 +64,7 @@ import Allsellerproducts from "./components/admindashboard/Allsellerproducts";
 import Offeredproductdetails from "./components/sellerdashboard/offeredproductdetails";
 import ReturnOrder from "./components/customerdetails/ReturnOder";
 import Sellerreturnproducts from "./components/admindashboard/Sellerreturnproducts";
+import Shop from "./components/shops";
 
 
 function App() {
@@ -242,6 +243,8 @@ function App() {
                       <Route path="sellerreturnproducts" element={<Sellerreturnproducts />}/>
 
                       <Route path="allsellerproducts" element={<Allsellerproducts/>}/>
+                      <Route path="shop" element={<Shop/>}/>
+
 
         </Routes>
 

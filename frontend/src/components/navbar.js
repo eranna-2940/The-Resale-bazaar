@@ -823,6 +823,16 @@ const MyNavbar = () => {
                           </i>
                         </button>
                       )}
+                        <div className="mt-2 ms-md-2 me-md-2  me-lg-3 ms-2 me-2  cartBtn" title="Stores">
+                        <Link
+                          to="/shop"
+                          className="text-decoration-none text-dark"
+                        >
+                          <i className="bi bi-shop-window fs-4 position-relative">
+
+                          </i>
+                        </Link>
+                      </div>
                     </div>
                   </>
                 )}
