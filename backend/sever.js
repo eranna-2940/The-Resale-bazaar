@@ -2267,6 +2267,20 @@ app.get("/returnproducts", (req, res) => {
   });
 });
 
+app.get('/usermanagement', (req, res) => {
+  const query =`SELECT r.*, p.* FROM register r INNER JOIN products p ON r.user_id = p.seller_id `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Database query error:', err);
+      return res.status(500).json({ error: 'Database query error' });
+    }
+
+    // Directly return the raw results without restructuring
+    res.json(results);
+  });
+});
+
 //admin disbaled products 
 app.put('/handleSellerProductsStatus', (req, res) => {
   const { seller_id, action } = req.body;

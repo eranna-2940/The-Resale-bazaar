@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios";
 import Footer from "./footer";
 import MyNavbar from "./navbar";
-// import Stores from "../images/stores.jpg";
+import Stores from "../images/stores.jpg";
 
 export default function Shop() {
   const [data, setData] = useState([]);
@@ -14,7 +14,7 @@ export default function Shop() {
   useEffect(() => {
     axios
       .get(
-        `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/sellerproducts`
+        `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/usermanagement`
       )
       .then((res) => {
         if (res.data !== "Error" && res.data !== "Fail") {
@@ -79,7 +79,7 @@ export default function Shop() {
             <div className="m-4 ps-md-4"></div>
             <div className="d-lg-flex">
               <div className="col-lg-6">
-                {/* <img src={Stores} alt="Stores" width="100%"></img> */}
+                <img src={Stores} alt="Stores" width="100%"></img>
               </div>
               <div className="mt-5">
                 <div className="d-flex flex-column justify-content-center align-items-center me-3">
