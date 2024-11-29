@@ -653,7 +653,6 @@ app.get("/allproducts", (req, res) => {
 app.get("/sellerproducts", (req, res) => {
   const sql = retrievingSellerProductsQuery;
 
-
   db.query(sql, (err, data) => {
     if (err) {
       return res.json("Error");
@@ -1560,6 +1559,30 @@ app.get("/updatepayment", (req, res) => {
   });
 });
 
+app.put("/contact/:email", (req, res) => {
+  const email = req.params.email;
+  const {
+    reply
+  } = req.body;
+
+  const sql = `UPDATE contact SET solution = ?  WHERE email = ?`;
+  const values = [
+    reply,
+    email  ];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Error updating shipping address:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    console.log("Shipping address updated successfully");
+    return res
+      .status(200)
+      .json({ message: "Shipping address updated successfully" });
+  });
+});
+
+
 // app.put('/products/:productId/allproducts', (req, res) => {
 //   const productId = req.params.productId;
 //   const { likeCount } = req.body; // Ensure that your request body contains likeCount
@@ -1834,6 +1857,46 @@ app.get('/shipmentjoin', (req, res) => {
 
 
 // Fetch cart items with product details
+
+
+// app.get("/shipmentjoin", (req, res) => {
+//   // Query for orders table
+//   const queryOrders = `SELECT * FROM products INNER JOIN  orders ON orders.product_id = products.id;`
+
+//   // Query for guest_orders table
+//   const queryGuestOrders = `SELECT * FROM products INNER JOIN  guest_orders ON guest_orders.product_id = products.id;`;
+
+//   // Fetch orders first
+//   db.query(queryOrders, (err, ordersData) => {
+//     if (err) {
+//       return res.json("Error retrieving orders");
+//     }
+
+//     db.query(queryGuestOrders, (err, guestOrdersData) => {
+//       if (err) {
+//         return res.json("Error retrieving guest orders");
+//       }
+
+//       const combinedData = [...ordersData, ...guestOrdersData];
+
+//       return res.json(combinedData);
+//     });
+//   });
+// });
+
+app.get("/registedusers", (req, res) => {
+  const sql = retrievingUsersQuery;
+  db.query(sql, (err, data) => {
+    if (err) {
+      return res.json("Error");
+    }
+    if (data.length > 0) {
+      return res.json(data);
+    } else {
+      return res.json("Fail");
+    }
+  });
+});
 app.get('/fetchCartItemsWithProducts', (req, res) => {
   const userid = req.query.userid;
   
@@ -2280,6 +2343,49 @@ app.get('/usermanagement', (req, res) => {
     res.json(results);
   });
 });
+
+
+app.put('/moveproducttotop', async (req, res) => {
+  const { ids } = req.body; // Expecting an array of IDs
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).send({ message: 'Invalid input: IDs must be an array and cannot be empty' });
+  }
+
+  try {
+    // Start a transaction to ensure atomic updates
+    await db.query('BEGIN');
+
+    // Step 1: Find the highest position currently occupied
+    const maxPositionResult = await db.query('SELECT MAX(position) AS maxPosition FROM products WHERE position >= 1');
+    const maxPosition = (maxPositionResult[0] && maxPositionResult[0].maxPosition !== null) 
+      ? maxPositionResult[0].maxPosition 
+      : 0;
+
+    // Step 2: Shift all products down to make space for the new products
+    await db.query('UPDATE products SET position = position + ? WHERE position >= 1 AND id NOT IN (?)', [ids.length, ids]);
+
+    // Step 3: Update the selected products' positions sequentially starting from position 1
+    let newPosition = 1;
+    for (const id of ids) {
+      await db.query('UPDATE products SET position = ? WHERE id = ?', [newPosition, id]);
+      newPosition++;
+    }
+
+    // Step 4: Commit the transaction to apply the changes
+    await db.query('COMMIT');
+    console.log('Transaction committed successfully');
+
+    res.status(200).send({ message: 'Products moved to top successfully' });
+  } catch (error) {
+    // Rollback the transaction if anything goes wrong
+    await db.query('ROLLBACK');
+    console.error('Error updating product positions:', error);
+    res.status(500).send({ message: 'Internal server error' });
+  }
+});
+
+
 
 //admin disbaled products 
 app.put('/handleSellerProductsStatus', (req, res) => {

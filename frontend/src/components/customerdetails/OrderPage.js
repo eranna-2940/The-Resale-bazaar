@@ -466,7 +466,7 @@ const OrderPage = () => {
     ];
 
     setOrderStages(stages);
-  }, [productData]);
+  }, [productData,]);
 
   const styles = `
     .progress-dot-bar {

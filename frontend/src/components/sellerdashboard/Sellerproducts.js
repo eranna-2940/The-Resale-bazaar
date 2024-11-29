@@ -200,7 +200,7 @@ export default function Sellerproducts() {
     handleKeyup(e, capitalizedValue);
   };
   
-
+    // eslint-disable-next-line no-unused-vars
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'));
@@ -287,7 +287,7 @@ export default function Sellerproducts() {
 
       // Append deleted images
       formDataToSend.append('deletedImages', JSON.stringify(deletedImages));
-
+    // eslint-disable-next-line no-unused-vars
       const response = await axios.put(
         `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/handleproducts/${formData.id}`,
         formDataToSend,
@@ -484,7 +484,7 @@ export default function Sellerproducts() {
             {isImage ? (
               <img
                 src={srcPath}
-                alt={`Product Image ${index + 1}`}
+                alt={`Product ${index + 1}`}
                 className="img-thumbnail"
                 style={{ width: '100px', height: '100px', objectFit: 'contain', alignSelf: 'center' }}
               />

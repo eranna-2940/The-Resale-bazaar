@@ -7,7 +7,9 @@ import Stores from "../images/stores.jpg";
 
 export default function Shop() {
   const [data, setData] = useState([]);
+      // eslint-disable-next-line no-unused-vars
   const [searchTerm, setSearchTerm] = useState(""); // Search term for filtering shops
+      // eslint-disable-next-line no-unused-vars
   const [notificationMessage, setNotificationMessage] = useState("");
   const navigate = useNavigate(); // Initialize navigate
 

@@ -492,9 +492,11 @@ import Footer from "../footer";
 import { useData } from "../CartContext";
 
 export default function Shipments() {
+      // eslint-disable-next-line no-unused-vars
   const [products, setProducts] = useState([]);
   const [pageSize, setPageSize] = useState(15);
   const [currentPage, setCurrentPage] = useState(1);
+      // eslint-disable-next-line no-unused-vars
   const [viewRowIndex, setViewRowIndex] = useState(null);
   const [shippingProducts, setShippingProducts] = useState([]);
   const [checkedShipments, setCheckedShipments] = useState([]);

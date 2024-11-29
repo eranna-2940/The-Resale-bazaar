@@ -3,6 +3,7 @@ import axios from "axios";
 import { Button } from "react-bootstrap";
 import MyNavbar from "./navbar";
 import Footer from "./footer";
+import Scrolltotopbtn from "./Scrolltotopbutton";
 
 const FAQ = () => {
   const [faqData, setFaqData] = useState([]);
@@ -46,8 +47,8 @@ const FAQ = () => {
           </Button>
         </div>
         {isOpen && (
-          <div className="mt-3" style={{ cursor: "text" }}>
-            {content}
+          <div className="mt-3 ms-4" style={{ cursor: "text" }}>
+             {content}
           </div>
         )}
       </div>
@@ -78,13 +79,16 @@ const FAQ = () => {
         </p>
         {faqData.length > 0 ? (
           faqData.map((item, index) => (
-            <CollapsiblePanel key={index} heading={item.enquiry} />
+            item.solution && (
+            <CollapsiblePanel key={index} heading={item.enquiry} content={item.solution}/>
+            )
           ))
         ) : (
           <h2 className="text-center fs-6 mb-3">NO FREQUENTLY ASKED QUESTIONS</h2>
         )}
       </div>
       <Footer />
+      <Scrolltotopbtn/>
     </>
   );
 };

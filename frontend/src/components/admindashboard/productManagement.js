@@ -5,6 +5,7 @@ import Adminnavbar from "./Adminnavbar";
 import Adminpagination from "./Adminpagination";
 import Footer from "../footer";
 import Confirm from "../confirmalertbox";
+import Adminmenu from "./Adminmenu";
 
 export default function Productmanagement() {
   const [pageSize, setPageSize] = useState(15);
@@ -63,7 +64,7 @@ export default function Productmanagement() {
           setFilteredProducts(
             res.data.filter(
               (item) =>
-                item.shop_status === "enabled"
+                item.status === "enabled"
             )
           );
         }
@@ -590,10 +591,12 @@ export default function Productmanagement() {
       <Adminnavbar />
       {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
 
-      <div className="">
-        {/* <div className="col-md-2 selleraccordion">
+      <div className="d-md-flex">
+        <div className="col-md-2 selleraccordion">
           <Adminmenu />
-        </div> */}
+        </div>
+        <div className="col-md-10">
+        <div className="fullscreen2">
         <div className="container">
           <div className="fullscreen2">
             <main>
@@ -727,7 +730,8 @@ export default function Productmanagement() {
             {/* <Adminfooter /> */}
           </div>
         </div>
-
+       </div>
+       </div>
       </div>
       <Footer />
       {/* Modal for editing product */}
@@ -1390,43 +1394,3 @@ export default function Productmanagement() {
 }
 
 
-app.put('/moveproducttotop', async (req, res) => {
-    const { ids } = req.body; // Expecting an array of IDs
-  
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).send({ message: 'Invalid input: IDs must be an array and cannot be empty' });
-    }
-  
-    try {
-      // Start a transaction to ensure atomic updates
-      await db.query('BEGIN');
-  
-      // Step 1: Find the highest position currently occupied
-      const maxPositionResult = await db.query('SELECT MAX(position) AS maxPosition FROM products WHERE position >= 1');
-      const maxPosition = (maxPositionResult[0] && maxPositionResult[0].maxPosition !== null) 
-        ? maxPositionResult[0].maxPosition 
-        : 0;
-  
-      // Step 2: Shift all products down to make space for the new products
-      await db.query('UPDATE products SET position = position + ? WHERE position >= 1 AND id NOT IN (?)', [ids.length, ids]);
-  
-      // Step 3: Update the selected products' positions sequentially starting from position 1
-      let newPosition = 1;
-      for (const id of ids) {
-        await db.query('UPDATE products SET position = ? WHERE id = ?', [newPosition, id]);
-        newPosition++;
-      }
-  
-      // Step 4: Commit the transaction to apply the changes
-      await db.query('COMMIT');
-      console.log('Transaction committed successfully');
-  
-      res.status(200).send({ message: 'Products moved to top successfully' });
-    } catch (error) {
-      // Rollback the transaction if anything goes wrong
-      await db.query('ROLLBACK');
-      console.error('Error updating product positions:', error);
-      res.status(500).send({ message: 'Internal server error' });
-    }
-  });
-  

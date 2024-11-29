@@ -40,6 +40,38 @@ export default function Adminmenu() {
                   <i className="bi bi-record-circle"></i> Products
                 </li>
               </Link>
+              <Link
+                to="/productmanagement"
+                className="text-decoration-none text-dark"
+              >
+                <li className="list-group-item">
+                  <i className="bi bi-record-circle"></i> Product Management
+                </li>
+              </Link>
+              <Link
+                to="/users"
+                className="text-decoration-none text-dark"
+              >
+                <li className="list-group-item">
+                  <i className="bi bi-record-circle"></i> Users
+                </li>
+              </Link>
+              <Link
+                to="/sales"
+                className="text-decoration-none text-dark"
+              >
+                <li className="list-group-item">
+                  <i className="bi bi-record-circle"></i> Sales
+                </li>
+              </Link>
+              <Link
+                to="/faqsolution"
+                className="text-decoration-none text-dark"
+              >
+                <li className="list-group-item">
+                  <i className="bi bi-record-circle"></i> Faqs
+                </li>
+              </Link>
             </ul>
           </div>
         </div>

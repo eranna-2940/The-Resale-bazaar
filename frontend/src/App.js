@@ -65,6 +65,10 @@ import Offeredproductdetails from "./components/sellerdashboard/offeredproductde
 import ReturnOrder from "./components/customerdetails/ReturnOder";
 import Sellerreturnproducts from "./components/admindashboard/Sellerreturnproducts";
 import Shop from "./components/shops";
+import Productmanagement from "./components/admindashboard/productManagement";
+import Sales from "./components/admindashboard/Sales";
+import Users from "./components/admindashboard/Users";
+import Faqsolution from "./components/admindashboard/Faqsolution";
 
 
 function App() {
@@ -244,7 +248,15 @@ function App() {
 
                       <Route path="allsellerproducts" element={<Allsellerproducts/>}/>
                       <Route path="shop" element={<Shop/>}/>
-
+                      <Route path="productmanagement" element={<Productmanagement/>}/>
+                      <Route path="sales" element={<Sales/>}/>
+                      <Route
+            path="users"
+            element={
+              <ProtectedRoute>{isUserLoggedIn && <Users />}</ProtectedRoute>
+            }
+          ></Route>
+          <Route path="/faqsolution" element={<Faqsolution />} />
 
         </Routes>
 
