@@ -6,11 +6,13 @@ import Footer from '../footer';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import TotalReviews from './TotalReviews';
 import Product from "../Product";
+import Notification from "../Notification"
 
 const SellerProfile = () => {
   const { sellerId } = useParams();
    const location = useLocation();
-  const userdetails = location.state.userdetails
+   // eslint-disable-next-line
+  const [userdetails,setUserDetails]= useState(location.state?.userDetails ||  [])
   const [sellerDetails, setSellerDetails] = useState({});
   const [allProducts, setAllProducts] = useState([]);
   const [sellingProducts, setSellingProducts] = useState([]);
@@ -19,6 +21,7 @@ const SellerProfile = () => {
   const [savedProducts, setSavedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [notification, setNotification] = useState(null);
   const [formData, setFormData] = useState({
     user_id: sellerId,
     name: '',
@@ -42,7 +45,9 @@ const SellerProfile = () => {
 
   const handleSubmit = () => {
     if (!name || !email || !phone) {
-      alert("Please fill out all required fields");
+      setNotification({ message: "Please fill out all required fields", type: 'error' });
+          setTimeout(() => setNotification(null), 3000);
+      alert("");
       return;
     }
 
@@ -54,10 +59,15 @@ const SellerProfile = () => {
       user_id: sellerId
     })
     .then(res => {
-      alert('Data added successfully')
+      setNotification({ message: "Data added successfully", type: 'success' });
+          setTimeout(() => {
+            setNotification(null);
+            window.location.reload(false);
+          },2000);
       setFormData({ name: '', email: '', phone: '', comment: '' });
     }).catch(err => {
-      console.error('Error posting data:', err);
+      setNotification({ message: "Error posting data:", type: 'error' });
+      setTimeout(() => setNotification(null), 3000);
     });
   };
 
@@ -92,7 +102,7 @@ const SellerProfile = () => {
         setLoading(false);
       })
       .catch(err => {
-        console.log(err);
+        // console.log(err);
         setLoading(false);
 
       });
@@ -101,9 +111,9 @@ const SellerProfile = () => {
     axios.get(`${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/getproducts`)
       .then(res => {
         if (res.data !== "Fail" && res.data !== "Error") {
-          console.log(res.data)
+          // console.log(res.data)
           const products = res.data.filter(product => product.like_user_id.toString()=== sellerId);
-          console.log(products)
+          // console.log(products)
           setLikedProducts(products);
         }
       })
@@ -116,7 +126,7 @@ const SellerProfile = () => {
       .then(res => {
         if (res.data !== "Fail" && res.data !== "Error") {
           const products = res.data.filter(product => product.user_id.toString() === sellerId);
-          console.log(products)
+          // console.log(products)
           setSavedProducts(products);
         }
       })
@@ -144,6 +154,7 @@ const SellerProfile = () => {
   return (
     <>
       <MyNavbar/>
+      {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
       <div className="container mt-3">
         <div className="row">
           <div className="col-lg-12">

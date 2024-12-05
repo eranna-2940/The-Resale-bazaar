@@ -5,6 +5,7 @@ import Adminfooter from "./Adminfooter";
 import Adminnavbar from "./Adminnavbar";
 import Adminmenu from "./Adminmenu";
 import { Link } from "react-router-dom";
+import Notification from "../Notification";
 
 export default function Acceptproduct() {
   // eslint-disable-next-line no-unused-vars
@@ -13,6 +14,7 @@ export default function Acceptproduct() {
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const [formData, setFormData] = useState({
     id: null,
@@ -144,7 +146,7 @@ export default function Acceptproduct() {
 
       // Append deleted images
       formDataToSend.append('deletedImages', JSON.stringify(deletedImages));
-
+// eslint-disable-next-line
       const response = await axios.put(
         `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/handleproducts/${formData.id}`,
         formDataToSend,
@@ -154,8 +156,11 @@ export default function Acceptproduct() {
           },
         }
       );
-
-      alert('Product updated successfully');
+      setNotification({ message: "Product updated successfully", type: 'success' });
+      setTimeout(() => {
+        setNotification(null);
+        window.location.reload(false);
+      },3000);
       setDeletedImages([]);
       window.location.reload(false); // Reload the page or update state as necessary
     } catch (error) {
@@ -247,6 +252,8 @@ export default function Acceptproduct() {
   return (
     <div className="fullscreen">
       <Adminnavbar />
+      {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
+
       <div className="d-md-flex">
         <div className="col-md-2 selleraccordion">
           <Adminmenu />
@@ -481,7 +488,7 @@ export default function Acceptproduct() {
             {isImage ? (
               <img
                 src={srcPath}
-                alt={`Product Image ${index + 1}`}
+                alt={`Product ${index + 1}`}
                 className="img-thumbnail"
                 style={{ width: '100px', height: '100px', objectFit: 'contain', alignSelf: 'center' }}
               />

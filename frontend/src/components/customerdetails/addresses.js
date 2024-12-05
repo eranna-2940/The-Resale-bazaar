@@ -4,12 +4,14 @@ import MyNavbar from "../navbar";
 import Customermenu from "./Customermenu";
 import Footer from "../footer";
 import Customerbanner from "./Customerbanner";
+import Notification from '../Notification'
 
 export default function Addresses() {
   const [shippingAddress, setShippingAddress] = useState([]);
   const [billingAddress,setBillingAddress]=useState([])
   const [editingId, setEditingId] = useState(null);
   const [editingId1, setEditingId1] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const [formData, setFormData] = useState({
     firstname: "",
@@ -85,9 +87,14 @@ export default function Addresses() {
         `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/saveShippingAddress/${addressId}`
       );
       setShippingAddress(shippingAddress.filter((item) => item.id !== addressId));
-      alert("Address deleted successfully");
+      setNotification({ message: "Address deleted successfully", type: 'success' });
+          setTimeout(() => {
+            setNotification(null);
+            window.location.reload(false);
+          },2000);
     } catch (error) {
-      console.error("Error deleting address:", error);
+      setNotification({ message: "Error deleting address:", type: 'error' });
+          setTimeout(() => setNotification(null), 3000);
     }
   };
   const handleDelete1 = async (addressId) => {
@@ -96,9 +103,14 @@ export default function Addresses() {
         `${process.env.REACT_APP_HOST}${process.env.REACT_APP_PORT}/saveBillingAddress/${addressId}`
       );
       setBillingAddress(billingAddress.filter((item) => item.id !== addressId));
-      alert("Address deleted successfully");
+      setNotification({ message: "Address deleted successfully", type: 'success' });
+      setTimeout(() => {
+        setNotification(null);
+        window.location.reload(false);
+      },2000);
     } catch (error) {
-      console.error("Error deleting address:", error);
+      setNotification({ message: "Error deleting address:", type: 'error' });
+          setTimeout(() => setNotification(null), 3000);
     }
   };
 
@@ -131,9 +143,12 @@ export default function Addresses() {
           )
         );
       }
-  
-      alert("Address updated successfully");
-  
+      setNotification({ message: "Address updated successfully", type: 'success' });
+      setTimeout(() => {
+        setNotification(null);
+        window.location.reload(false);
+      },2000);
+    
       // Reset the editing IDs after update
       setEditingId(null);
       setEditingId1(null);
@@ -147,7 +162,8 @@ export default function Addresses() {
       });
   
     } catch (error) {
-      console.error("Error updating address:", error);
+      setNotification({ message: "Error updating address:", type: 'error' });
+      setTimeout(() => setNotification(null), 3000);
     }
   };
   
@@ -435,7 +451,9 @@ export default function Addresses() {
   }
   return (
     <div className="fullscreen">
+
       <MyNavbar />
+      {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
       <main>
         <Customerbanner />
         <div className="d-lg-flex justify-content-around p-2 ps-lg-5 pe-lg-5">

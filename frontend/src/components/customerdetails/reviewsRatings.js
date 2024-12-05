@@ -305,6 +305,7 @@ function ReviewRatings() {
       <main>
         <div className='d-flex justify-content-center'>
           <div className="review p-2 col-md-6 col-lg-4 col-12 mt-5">
+            <form  onSubmit={handleSubmit}>
             <div className="fb-form">
               <div>
                 <h4 className="">Tell us what you think</h4>
@@ -334,6 +335,7 @@ function ReviewRatings() {
                 placeholder="Description.."
                 value={values.description}
                 onChange={handleInputChange}
+                required
               ></textarea>
               <input
                 type="text"
@@ -343,6 +345,7 @@ function ReviewRatings() {
                 placeholder='Review title..'
                 value={values.title}
                 onChange={handleInputChange}
+                required
               />
               <div className="border ms-2" style={{ width: "50px", cursor: "pointer" }} onClick={() => document.getElementById('file-input').click()}>
                 <i className="bi bi-camera-fill fs-2 m-2"></i>
@@ -354,6 +357,7 @@ function ReviewRatings() {
                 multiple
                 accept="image/*"
                 onChange={handleFileChange}
+                required
               />
               <div className="image-preview mt-2">
                 {selectedFiles.map((file, index) => (
@@ -364,8 +368,9 @@ function ReviewRatings() {
                 ))}
               </div>
               {errorMessage && <p className="error-message">{errorMessage}</p>}
-              <button type="submit" className="form-control btn btn-primary mt-4" onClick={handleSubmit}>Submit</button>
+              <button type="submit" className="form-control btn btn-primary mt-4">Submit</button>
             </div>
+            </form>
           </div>
         </div>
       </main>

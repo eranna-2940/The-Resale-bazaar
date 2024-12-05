@@ -181,10 +181,11 @@ import Footer from "../footer";
 import Customerbanner from "./Customerbanner";
 import { useData } from "../CartContext";
 import axios from "axios";
-
+import Notification from "../Notification";
 export default function Customerinfo() {
       // eslint-disable-next-line no-unused-vars
   const { user, authToken } = useData();
+  const [notification, setNotification] = useState(null);
   const [values, setValues] = useState({
     firstname: "",
     lastname: "",
@@ -250,10 +251,14 @@ export default function Customerinfo() {
       })
       .then((res) => {
         if (res.data === "Error") {
-          alert("Error while updating profile. Please try again.");
+          setNotification({ message: "Error while updating profile. Please try again.", type: 'error' });
+          setTimeout(() => setNotification(null), 3000);
         } else {
-          alert("Profile updated successfully");
-          window.location.reload(false);
+          setNotification({ message: "Profile updated successfully", type: 'success' });
+          setTimeout(() => {
+            setNotification(null);
+            window.location.reload(false);
+          },2000);
         }
       })
       .catch((err) => console.log(err));
@@ -262,6 +267,8 @@ export default function Customerinfo() {
   return (
     <div className="fullscreen">
       <MyNavbar />
+      {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
+
       <main>
         <Customerbanner />
         <div className="d-lg-flex justify-content-around p-2 ps-lg-5 pe-lg-5">

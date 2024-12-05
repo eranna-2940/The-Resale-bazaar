@@ -4,8 +4,10 @@ import Sellernavbar from "./Sellernavbar";
 import Sellermenu from "./Sellermenu";
 import Sellerfooter from "./Sellerfooter";
 import Sellerpagination from "./sellerpagination";
+import Notification from "../Notification"
 
 export default function Sellerproducts() {
+  const [notification, setNotification] = useState(null);
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -298,16 +300,18 @@ export default function Sellerproducts() {
         }
       );
 
-      alert('Product updated successfully');
+      setNotification({ message: "Product updated successfully", type: 'success' });
+          setTimeout(() => {
+            setNotification(null);
+            window.location.reload(false);
+          },2000);
       setDeletedImages([]);
-      window.location.reload(false); // Reload the page or update state as necessary
     } catch (error) {
-      console.error('Error updating product:', error);
-      setDisabled(false);
+      setNotification({ message: "Error while updating product. Please try again.", type: 'error' });
+      setTimeout(() => setNotification(null), 3000);
+  setDisabled(false);
     }
   };
-
-
   const getMediaType = (url) => {
     const extension = url.split('.').pop().toLowerCase();
     if (["mp4", "webm", "avi"].includes(extension)) {
@@ -319,6 +323,7 @@ export default function Sellerproducts() {
   return (
     <div className="">
       <Sellernavbar />
+      {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
       <div className="d-md-flex">
         <div className="col-md-2 selleraccordion">
           <Sellermenu />

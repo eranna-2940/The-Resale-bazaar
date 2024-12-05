@@ -490,12 +490,14 @@ import axios from "axios";
 import Scrolltotopbtn from "../Scrolltotopbutton";
 import Footer from "../footer";
 import { useData } from "../CartContext";
-
+import Sellermenu from "./Sellermenu";
+import Notification from "../Notification"
 export default function Shipments() {
       // eslint-disable-next-line no-unused-vars
   const [products, setProducts] = useState([]);
   const [pageSize, setPageSize] = useState(15);
   const [currentPage, setCurrentPage] = useState(1);
+  const [notification, setNotification] = useState(null);
       // eslint-disable-next-line no-unused-vars
   const [viewRowIndex, setViewRowIndex] = useState(null);
   const [shippingProducts, setShippingProducts] = useState([]);
@@ -545,7 +547,8 @@ export default function Shipments() {
 
   const handleOrder = () => {
     if (!selectedDate) {
-      alert("Please select a date.");
+      setNotification({ message: "Please select a date.", type: 'error' });
+          setTimeout(() => setNotification(null), 3000);
       return;
     }
 
@@ -567,7 +570,11 @@ export default function Shipments() {
 
     Promise.all(updateRequests)
       .then(() => {
-        console.log("Orders updated successfully");
+        setNotification({ message: "Orders updated successfully", type: 'success' });
+          setTimeout(() => {
+            setNotification(null);
+            window.location.reload(false);
+          },2000);
         setShippingProducts((prev) =>
           prev.map((item) =>
             checkedShipments.includes(item.shipment_id)
@@ -585,7 +592,11 @@ export default function Shipments() {
         setCanDeliver(false);
         setDatePickerVisible(false);
       })
-      .catch((err) => console.log("Error updating orders:", err));
+      .catch((err) => {
+        setNotification({ message: "Error while updating profile. Please try again.", type: 'error' });
+          setTimeout(() => setNotification(null), 3000);
+
+      });
   };
 
   const handleChecked = (e) => {
@@ -611,8 +622,12 @@ export default function Shipments() {
   return (
     <div className="">
       <Sellernavbar />
+      {notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
       <div className="d-md-flex">
-        <div className="container">
+      <div className="col-md-2 selleraccordion">
+          <Sellermenu />
+        </div>
+        <div className="col-md-10 ">
           <div className="fullscreen2">
             <main>
               <div className="text-center p-3">
