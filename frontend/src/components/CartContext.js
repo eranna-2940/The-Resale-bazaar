@@ -263,7 +263,13 @@ export const CartProvider = ({ children }) => {
         setTimeout(() => setNotification(null), 3000);
         window.location.reload(false);
       }
-    } else {
+    }
+     else {
+      if (!product || !product.seller_id) {
+        setNotification({ message: "Seller information not available. Operation cancelled.", type: 'error' });
+        setTimeout(() => setNotification(null), 3000);
+        return; // Exit the function, canceling further actions
+      }  
     addToWishlist(product);
     deletefunction(productId);
     }
