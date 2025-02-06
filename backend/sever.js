@@ -82,7 +82,8 @@ const {
   removeLikeQuery,
   LikecountQuery,
   checkLikeQuery,
-  ReturnDetailsQuery
+  ReturnDetailsQuery,
+  largeinventorycontact
 } = require("./queries");
 const cors = require("cors");
 const multer = require('multer');
@@ -250,6 +251,19 @@ const sendCancellationEmail = (email, subject, message) => {
   return smtpTransport.sendMail(mailOptions);
 };
 
+const sendStatusUpdateEmail  = (email, subject, message) => {
+  const mailOptions = {
+    from: process.env.REACT_APP_FROMMAIL,
+    to: email,
+    subject: subject,
+    generateTextFromHTML: true,
+    html: message,
+  };
+
+  return smtpTransport.sendMail(mailOptions);
+};
+
+
 const getUserById = (userId) => {
   return new Promise((resolve, reject) => {
     const query = "SELECT email FROM register WHERE user_id = ?";
@@ -294,16 +308,19 @@ db.query(createDatabaseQuery, (err) => {
                           db.query(offeredProducts, (err) => {
                             if (err) throw err;
                             db.query(ContactData, (err) => {
-                              if (err) throw err;
-
-                         
+                              if (err) throw err;                         
                             db.query(ReviewsQuery, (err) => {
                               if (err) throw err;
                             db.query(LikesQuery, (err) => {
                               if (err) throw err;
                               db.query(SavesQuery, (err) => {
                                 if (err) throw err;
-                                console.log("Database and tables created successfully");
+
+                                db.query(largeinventorycontact,(err)=>{
+                                  if(err) throw err;
+                                  console.log("Database and tables created successfully");
+                                })
+                               
                               });
                             });
 
@@ -797,32 +814,212 @@ app.post("/updateproducts", (req, res) => {
 //     return res.json(result);
 //   })
 // })
+
+
+ //previous code 
+// app.post("/updateOrder", (req, res) => {
+//   const { shipment_id, shipped_date, delivered_date } = req.body;
+
+//   let sql;
+//   let values = [];
+
+//   if (shipped_date && delivered_date) {
+//     sql = updateOrderDeliveredandShippementQuery;
+//     values = [shipped_date, delivered_date, shipment_id];
+//   } else if (shipped_date) {
+//     sql = updateOrderShippmentQuery;
+//     values = [shipped_date, shipment_id];
+//   } else if (delivered_date) {
+//     sql = updateOrderDeliveredQuery;
+//     values = [delivered_date, shipment_id];
+//   } else {
+//     return res.status(400).json({ error: "No date provided for update" });
+//   }
+
+//   // Execute the SQL query
+//   db.query(sql, values, (err, result) => {
+//     if (err) {
+//       console.error("Error updating order:", err);
+//       return res.status(500).json({ error: "Error updating order" });
+//     }
+//     return res.json({ success: true, message: "Order updated successfully", result });
+//   });
+// });
+
+//new code
+
+function sendShipmentEmail(email, shipped_date, delivered_date) {
+  return new Promise((resolve, reject) => {
+    let subject = '';
+    let message = '';
+
+    if (shipped_date && delivered_date) {
+      subject = "Your Order has been Shipped and Delivered!";
+      message = `
+        <h3>Your order has been shipped and delivered!</h3>
+        <p>Shipped Date: ${shipped_date}</p>
+        <p>Delivered Date: ${delivered_date}</p>
+        <p>Thank you for shopping with us!</p>
+      `;
+    } else if (shipped_date) {
+      subject = "Your Order has been Shipped!";
+      message = `
+        <h3>Your order has been shipped!</h3>
+        <p>Shipped Date: ${shipped_date}</p>
+        <p>Thank you for shopping with us!</p>
+      `;
+    } else if (delivered_date) {
+      subject = "Your Order has been Delivered!";
+      message = `
+        <h3>Your order has been delivered!</h3>
+        <p>Delivered Date: ${delivered_date}</p>
+        <p>Thank you for shopping with us!</p>
+      `;
+    }
+
+    // Send the email (using your preferred email sending method)
+    sendStatusUpdateEmail(email, subject, message)
+      .then(resolve)
+      .catch(reject);
+  });
+}
 app.post("/updateOrder", (req, res) => {
-  const { shipment_id, shipped_date, delivered_date } = req.body;
+  const { shipment_id, shipped_date, delivered_date, buyer_id, customer_email } = req.body;
 
   let sql;
   let values = [];
+  let tableToUpdate = '';
+  
+  // Check if shipment_id exists in the orders table
+  const checkOrdersQuery = checkOrderShipmentQuery;
 
-  if (shipped_date && delivered_date) {
-    sql = updateOrderDeliveredandShippementQuery;
-    values = [shipped_date, delivered_date, shipment_id];
-  } else if (shipped_date) {
-    sql = updateOrderShippmentQuery;
-    values = [shipped_date, shipment_id];
-  } else if (delivered_date) {
-    sql = updateOrderDeliveredQuery;
-    values = [delivered_date, shipment_id];
-  } else {
-    return res.status(400).json({ error: "No date provided for update" });
-  }
-
-  // Execute the SQL query
-  db.query(sql, values, (err, result) => {
+  db.query(checkOrdersQuery, [shipment_id], (err, ordersData) => {
     if (err) {
-      console.error("Error updating order:", err);
-      return res.status(500).json({ error: "Error updating order" });
+      console.error("Error checking orders:", err);
+      return res.status(500).json({ error: "Error checking orders" });
     }
-    return res.json({ success: true, message: "Order updated successfully", result });
+
+    if (ordersData.length > 0) {
+      // Shipment found in orders table
+      tableToUpdate = 'orders';
+
+      // Determine the SQL query based on the available dates
+      if (shipped_date && delivered_date) {
+        sql = updateOrderDeliveredandShippementQuery;
+        values = [shipped_date, delivered_date, shipment_id];
+      } else if (shipped_date) {
+        sql = updateOrderShippmentQuery;
+        values = [shipped_date, shipment_id];
+      } else if (delivered_date) {
+        sql = updateOrderDeliveredQuery;
+        values = [delivered_date, shipment_id];
+      } else {
+        return res.status(400).json({ error: "No date provided for update" });
+      }
+
+      // Execute the SQL query for orders
+      db.query(sql, values, (err, result) => {
+        if (err) {
+          console.error("Error updating orders:", err);
+          return res.status(500).json({ error: "Error updating orders" });
+        }
+
+        // Now, handle the email notification based on shipment status
+        if (buyer_id) {
+          // Registered user, fetch their email
+          getUserById(buyer_id)
+            .then((user) => {
+              const buyerEmail = user.email; // Registered user's email
+              sendShipmentEmail(buyerEmail, shipped_date, delivered_date)
+                .then(() => {
+                  res.json({
+                    success: true,
+                    message: "Order updated successfully and email notification sent to registered user.",
+                    result,
+                  });
+                  console.log("email sent")
+                })
+                .catch((emailError) => {
+                  console.error("Error sending email to registered user:", emailError);
+                  res.status(500).json({ error: "Error sending email to registered user." });
+                });
+            })
+            .catch((err) => {
+              console.error("Error fetching registered user:", err);
+              res.status(500).json({ error: "Error fetching registered user details." });
+            });
+        } else {
+          // Guest user, use the customer_email directly
+          sendShipmentEmail(customer_email, shipped_date, delivered_date)
+            .then(() => {
+              res.json({
+                success: true,
+                message: "Order updated successfully and email notification sent to guest user.",
+                result,
+              });
+              console.log("email sent")
+
+            })
+            .catch((emailError) => {
+              console.error("Error sending email to guest user:", emailError);
+              res.status(500).json({ error: "Error sending email to guest user." });
+            });
+        }
+      });
+    } else {
+      // Shipment not found in orders, check the guest_orders table
+      const checkGuestOrdersQuery = checkGuestOrderShipmentQuery;
+
+      db.query(checkGuestOrdersQuery, [shipment_id], (err, guestOrdersData) => {
+        if (err) {
+          console.error("Error checking guest orders:", err);
+          return res.status(500).json({ error: "Error checking guest orders" });
+        }
+
+        if (guestOrdersData.length > 0) {
+          // Shipment found in guest_orders table
+          tableToUpdate = 'guest_orders';
+
+          // Determine the SQL query based on the available dates for guest orders
+          if (shipped_date && delivered_date) {
+            sql = updateGuestOrderDeliveredandShippementQuery;
+            values = [shipped_date, delivered_date, shipment_id];
+          } else if (shipped_date) {
+            sql = updateaGuestOrderShippmentQuery;
+            values = [shipped_date, shipment_id];
+          } else if (delivered_date) {
+            sql = updateGuestOrderDeliveredQuery;
+            values = [delivered_date, shipment_id];
+          } else {
+            return res.status(400).json({ error: "No date provided for update" });
+          }
+
+          // Execute the SQL query for guest orders
+          db.query(sql, values, (err, result) => {
+            if (err) {
+              console.error(`Error updating ${tableToUpdate}:`, err);
+              return res.status(500).json({ error: `Error updating ${tableToUpdate}` });
+            }
+
+            // Send email to guest user
+            sendShipmentEmail(customer_email, shipped_date, delivered_date)
+              .then(() => {
+                res.json({
+                  success: true,
+                  message: `${tableToUpdate.charAt(0).toUpperCase() + tableToUpdate.slice(1)} updated successfully and email notification sent to guest user.`,
+                  result,
+                });
+              })
+              .catch((emailError) => {
+                console.error("Error sending email to guest user:", emailError);
+                res.status(500).json({ error: "Error sending email to guest user." });
+              });
+          });
+        } else {
+          return res.status(404).json({ error: "Shipment not found" });
+        }
+      });
+    }
   });
 });
 
@@ -2400,7 +2597,72 @@ app.put('/moveproducttotop', async (req, res) => {
   }
 });
 
+// plans
 
+app.post("/largeinventorycontact",(req,res)=>{
+  const sql = "INSERT INTO largeinventorycontact (`name`,`email`,`enquiry`) VALUES(?)";
+  const values = [req.body.name,req.body.email,req.body.enquiry];
+  db.query(sql,[values],(err,data)=>{
+     if(err){
+       console.log(err);
+       return res.json("Error");
+
+     }
+     console.log("data added successfully");
+     return res.json(data);
+  })
+})
+
+app.get("/largeinventorycontact", (req, res) => {
+ const sql = "Select * from largeinventorycontact";
+
+ db.query(sql, (err, data) => {
+   if (err) {
+     return res.json("Error");
+   }
+   if (data.length > 0) {
+     return res.json(data);
+   } else {
+     return res.json("Fail");
+   }
+ });
+});
+app.post("/replyToEnquiry", (req, res) => {
+  const { enquiryId, replyMessage, userEmail } = req.body;
+
+
+  const emailSubject = "Enquiry for large inventory";  
+  const emailMessage = `
+    <h3>Hello,</h3>
+    <p>Thank you for your inquiry regarding the large inventory request. We have received your request.</p>
+    <p>${replyMessage}</p>
+    <p>Thank you for reaching out to us!</p>
+    <p>Best regards,</p>
+    <p>The Resale Bazaar Team</p>
+  `;
+
+  // 2. Update the database with the reply message
+  const updateQuery = "UPDATE largeinventorycontact SET solution = ?, status = 'Replied' WHERE id = ?";
+  db.query(updateQuery, [replyMessage, enquiryId], (err, result) => {
+    if (err) {
+      // If there's an error in updating the database, return an error response
+      console.error("Error updating the database:", err);
+      return res.status(500).json({ message: "Error updating the enquiry" });
+    }
+
+    // 3. Send the email notification to the user with the dynamic content
+    sendPurchaseConfirmationEmail(userEmail, emailSubject, emailMessage)  // Passing the subject and message directly
+      .then(() => {
+        // If email is sent successfully, return a success response
+        res.status(200).json({ message: "Reply sent successfully and email notification sent." });
+      })
+      .catch((emailError) => {
+        // If there's an error while sending the email, return an error response
+        console.error("Error sending email", emailError);
+        res.status(500).json({ message: "Error sending email." });
+      });
+  });
+});
 
 //admin disbaled products 
 app.put('/handleSellerProductsStatus', (req, res) => {

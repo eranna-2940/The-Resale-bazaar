@@ -23,6 +23,18 @@ INSERT IGNORE INTO admin
 VALUES 
   ("admin", "admin@admin", "${adminPassword}");
 `
+const largeinventorycontact = `
+  CREATE TABLE IF NOT EXISTS largeinventorycontact (
+      id INT NOT NULL AUTO_INCREMENT,
+      name VARCHAR(45) NOT NULL,
+      email VARCHAR(60) NOT NULL,
+      enquiry VARCHAR(90) NOT NULL,
+      solution MEDIUMTEXT NULL,
+      status VARCHAR(50) DEFAULT 'Pending',
+      UNIQUE INDEX id_UNIQUE (id ASC)
+  );
+`
+
 
 const createRegisterTableQuery = `
 CREATE TABLE IF NOT EXISTS register (
@@ -390,5 +402,6 @@ module.exports = {
   removeLikeQuery,
   LikecountQuery,
   checkLikeQuery,
-  ReturnDetailsQuery
+  ReturnDetailsQuery,
+  largeinventorycontact
 };
